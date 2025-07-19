@@ -1,8 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useUser } from "@supabase/auth-helpers-react";
+import { supabase } from '../../services/supabaseClient';
 import StepCard from '../../components/StepCard';
 import ProgressBar from '../../components/ProgressBar';
 
 const Financials = () => {
+  const user = useUser();
   const [completedSteps, setCompletedSteps] = useState([]);
 
   const steps = [
@@ -10,74 +13,110 @@ const Financials = () => {
       title: "Time in Business",
       description: "Establish your business timeline and history",
       details: "Document how long your business has been operating. This includes both the time since incorporation and the time since you started business activities.",
-      status: completedSteps.includes('time-in-business') ? 'completed' : 'pending'
     },
     {
       title: "Business Bank Account",
       description: "Open and maintain a business bank account",
       details: "Separate your business finances from personal finances. Open a dedicated business checking account in your business name.",
-      status: completedSteps.includes('business-bank-account') ? 'completed' : 'pending'
     },
     {
       title: "Business Bank Account Statements",
       description: "Maintain regular bank statements",
       details: "Keep copies of your monthly bank statements. These will be required for credit applications and demonstrate financial stability.",
-      status: completedSteps.includes('bank-statements') ? 'completed' : 'pending'
     },
     {
       title: "Business Bank Account Balance",
       description: "Maintain adequate account balances",
       details: "Keep sufficient funds in your business account. Most lenders require a minimum balance and regular deposits.",
-      status: completedSteps.includes('account-balance') ? 'completed' : 'pending'
     },
     {
       title: "Business Tax Returns",
       description: "File and maintain business tax returns",
       details: "Ensure all business tax returns are filed on time and accurately. Keep copies for at least 3 years.",
-      status: completedSteps.includes('tax-returns') ? 'completed' : 'pending'
     },
     {
       title: "Financial Statements",
       description: "Prepare financial statements",
       details: "Create and maintain profit & loss statements, balance sheets, and cash flow statements.",
-      status: completedSteps.includes('financial-statements') ? 'completed' : 'pending'
     },
     {
       title: "Business Collateral",
       description: "Identify and document business assets",
       details: "List all business assets that could serve as collateral for loans. Include equipment, inventory, and real estate.",
-      status: completedSteps.includes('collateral') ? 'completed' : 'pending'
     },
     {
       title: "Personal Tax Returns",
       description: "Maintain personal tax returns",
       details: "Keep personal tax returns up to date. Many business credit applications require personal financial information.",
-      status: completedSteps.includes('personal-tax-returns') ? 'completed' : 'pending'
     },
     {
       title: "Business Revenue",
       description: "Track and document business revenue",
       details: "Maintain detailed records of all business income. This includes sales, services, and other revenue streams.",
-      status: completedSteps.includes('revenue') ? 'completed' : 'pending'
     },
     {
       title: "Employees",
       description: "Document employee information",
       details: "Keep records of all employees, including W-2 forms and payroll information. This demonstrates business stability.",
-      status: completedSteps.includes('employees') ? 'completed' : 'pending'
     },
     {
       title: "10% of Revenue",
       description: "Ensure revenue meets minimum requirements",
       details: "Many lenders require that your business generates at least 10% of the requested loan amount in monthly revenue.",
-      status: completedSteps.includes('revenue-requirement') ? 'completed' : 'pending'
     }
   ];
 
-  const handleStepComplete = (step) => {
+  useEffect(() => {
+    if (user) {
+      fetchProgress();
+    }
+  }, [user]);
+
+  const fetchProgress = async () => {
+    const { data, error } = await supabase
+      .from("financials_progress") // ✅ corregido: tabla correcta
+      .select("step_name")
+      .eq("user_id", user.id)
+      .eq("completed", true);
+
+    if (error) {
+      console.error("Error fetching progress:", error);
+    } else {
+      setCompletedSteps(data.map((row) => row.step_name));
+    }
+  };
+
+  const toggleStep = async (step) => {
     const stepId = step.title.toLowerCase().replace(/\s+/g, '-');
-    if (!completedSteps.includes(stepId)) {
-      setCompletedSteps([...completedSteps, stepId]);
+    const isCompleted = completedSteps.includes(stepId);
+
+    try {
+      if (isCompleted) {
+        const { error } = await supabase
+          .from("financials_progress") // ✅ corregido
+          .delete()
+          .eq("user_id", user.id)
+          .eq("step_name", stepId);
+
+        if (error) throw error;
+
+        setCompletedSteps((prev) => prev.filter((s) => s !== stepId));
+      } else {
+        const { error } = await supabase
+          .from("financials_progress") // ✅ corregido
+          .upsert({
+            user_id: user.id,
+            step_name: stepId,
+            completed: true,
+            updated_at: new Date(),
+          });
+
+        if (error) throw error;
+
+        setCompletedSteps((prev) => [...prev, stepId]);
+      }
+    } catch (error) {
+      console.error("Error toggling step:", error);
     }
   };
 
@@ -101,18 +140,23 @@ const Financials = () => {
         </div>
 
         <div className="space-y-4">
-          {steps.map((step, index) => (
-            <StepCard
-              key={index}
-              step={step}
-              status={step.status}
-              onComplete={() => handleStepComplete(step)}
-            />
-          ))}
+          {steps.map((step, index) => {
+            const stepId = step.title.toLowerCase().replace(/\s+/g, '-');
+            return (
+              <StepCard
+                key={index}
+                title={step.title}
+                description={step.description}
+                details={step.details}
+                completed={completedSteps.includes(stepId)}
+                onToggle={() => toggleStep(step)}
+              />
+            );
+          })}
         </div>
       </div>
     </div>
   );
 };
 
-export default Financials; 
+export default Financials;

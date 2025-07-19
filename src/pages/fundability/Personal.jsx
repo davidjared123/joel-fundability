@@ -1,8 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useUser } from "@supabase/auth-helpers-react";
+import { supabase } from '../../services/supabaseClient';
 import StepCard from '../../components/StepCard';
 import ProgressBar from '../../components/ProgressBar';
 
 const Personal = () => {
+  const user = useUser();
   const [completedSteps, setCompletedSteps] = useState([]);
 
   const steps = [
@@ -10,38 +13,80 @@ const Personal = () => {
       title: "Personal Credit Score",
       description: "Monitor and improve your personal credit score",
       details: "Your personal credit score affects business credit applications. Aim for a score of 700+ for the best opportunities. Pay bills on time and keep credit utilization low.",
-      status: completedSteps.includes('personal-credit-score') ? 'completed' : 'pending'
     },
     {
       title: "Credit Report",
       description: "Review your personal credit report regularly",
       details: "Get free copies of your credit report from all three bureaus annually. Review for accuracy and dispute any errors. Monitor for identity theft.",
-      status: completedSteps.includes('credit-report') ? 'completed' : 'pending'
     },
     {
       title: "LexisNexis",
       description: "Check your LexisNexis consumer disclosure report",
       details: "LexisNexis maintains consumer reports that may affect your credit applications. Request your report annually and dispute any inaccuracies.",
-      status: completedSteps.includes('lexisnexis') ? 'completed' : 'pending'
     },
     {
       title: "Chex Systems",
       description: "Review your Chex Systems report",
       details: "Chex Systems tracks banking history. A negative report can affect your ability to open business bank accounts. Request your report and dispute any errors.",
-      status: completedSteps.includes('chex-systems') ? 'completed' : 'pending'
     },
     {
       title: "Bankruptcies, Liens and Judgements",
       description: "Address any negative public records",
       details: "Bankruptcies, liens, and judgments can severely impact your credit applications. Work to resolve these issues before applying for business credit.",
-      status: completedSteps.includes('public-records') ? 'completed' : 'pending'
     }
   ];
 
-  const handleStepComplete = (step) => {
+  useEffect(() => {
+    if (user) {
+      fetchProgress();
+    }
+  }, [user]);
+
+  const fetchProgress = async () => {
+    const { data, error } = await supabase
+      .from("personal_progress") // ✅ tabla correcta
+      .select("step_name")
+      .eq("user_id", user.id)
+      .eq("completed", true);
+
+    if (error) {
+      console.error("Error fetching progress:", error);
+    } else {
+      setCompletedSteps(data.map((row) => row.step_name));
+    }
+  };
+
+  const toggleStep = async (step) => {
     const stepId = step.title.toLowerCase().replace(/\s+/g, '-');
-    if (!completedSteps.includes(stepId)) {
-      setCompletedSteps([...completedSteps, stepId]);
+    const isCompleted = completedSteps.includes(stepId);
+
+    try {
+      if (isCompleted) {
+        const { error } = await supabase
+          .from("personal_progress") // ✅ tabla correcta
+          .delete()
+          .eq("user_id", user.id)
+          .eq("step_name", stepId);
+
+        if (error) throw error;
+
+        setCompletedSteps((prev) => prev.filter((s) => s !== stepId));
+      } else {
+        const { error } = await supabase
+          .from("personal_progress") // ✅ tabla correcta
+          .upsert({
+            user_id: user.id,
+            step_name: stepId,
+            completed: true,
+            updated_at: new Date(),
+          });
+
+        if (error) throw error;
+
+        setCompletedSteps((prev) => [...prev, stepId]);
+      }
+    } catch (error) {
+      console.error("Error toggling step:", error);
     }
   };
 
@@ -57,22 +102,24 @@ const Personal = () => {
             Manage your personal credit profile to support your business credit applications. 
             Many business credit applications require personal credit checks.
           </p>
-          
-          <ProgressBar 
-            completed={completedCount} 
-            total={totalSteps} 
-          />
+
+          <ProgressBar completed={completedCount} total={totalSteps} />
         </div>
 
         <div className="space-y-4">
-          {steps.map((step, index) => (
-            <StepCard
-              key={index}
-              step={step}
-              status={step.status}
-              onComplete={() => handleStepComplete(step)}
-            />
-          ))}
+          {steps.map((step, index) => {
+            const stepId = step.title.toLowerCase().replace(/\s+/g, '-');
+            return (
+              <StepCard
+                key={index}
+                title={step.title}
+                description={step.description}
+                details={step.details}
+                completed={completedSteps.includes(stepId)}
+                onToggle={() => toggleStep(step)}
+              />
+            );
+          })}
         </div>
 
         {/* Additional Information */}
@@ -91,4 +138,4 @@ const Personal = () => {
   );
 };
 
-export default Personal; 
+export default Personal;

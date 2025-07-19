@@ -1,7 +1,7 @@
 const StepCard = ({ title, completed, onToggle }) => {
   return (
     <div
-      className={`border rounded-xl p-4 shadow-sm flex items-center justify-between ${
+      className={`text-gray-600 border rounded-xl p-4 shadow-sm flex items-center justify-between ${
         completed ? "bg-green-100" : "bg-white"
       }`}
     >

@@ -15,7 +15,6 @@ const steps = [
 const Foundation = () => {
   const user = useUser();
   const [completedSteps, setCompletedSteps] = useState([]);
-  const totalSteps = steps.length;
 
   useEffect(() => {
     if (user) {
@@ -37,49 +36,66 @@ const Foundation = () => {
     }
   };
 
+  const normalizeStep = (step) => step.toLowerCase().replace(/\s+/g, '-');
+
   const toggleStep = async (step) => {
-    const isCompleted = completedSteps.includes(step);
+    const stepId = normalizeStep(step);
+    const isCompleted = completedSteps.includes(stepId);
 
-    const { error } = await supabase
-      .from("foundation_progress")
-      .upsert({
-        user_id: user.id,
-        step_name: step,
-        completed: !isCompleted,
-        updated_at: new Date(),
-      });
+    try {
+      if (isCompleted) {
+        const { error } = await supabase
+          .from("foundation_progress")
+          .delete()
+          .eq("user_id", user.id)
+          .eq("step_name", stepId);
 
-    if (error) {
-      console.error("Error updating step:", error);
-    } else {
-      setCompletedSteps((prev) =>
-        isCompleted
-          ? prev.filter((s) => s !== step)
-          : [...prev, step]
-      );
+        if (error) throw error;
+
+        setCompletedSteps((prev) => prev.filter((s) => s !== stepId));
+      } else {
+        const { error } = await supabase
+          .from("foundation_progress")
+          .upsert({
+            user_id: user.id,
+            step_name: stepId,
+            completed: true,
+            updated_at: new Date(),
+          });
+
+        if (error) throw error;
+
+        setCompletedSteps((prev) => [...prev, stepId]);
+      }
+    } catch (error) {
+      console.error("Error toggling step:", error);
     }
   };
 
+  const completedCount = completedSteps.length;
+  const totalSteps = steps.length;
+
   return (
-    <div className="p-4">
-      <h2 className="text-2xl font-semibold mb-2">Business Foundation</h2>
-      <p className="mb-4 text-gray-600">
-        Establishing a solid business foundation is crucial for building strong business credit.
-      </p>
+    <div className="min-h-screen bg-gray-100 py-8">
+      <div className="max-w-4xl mx-auto px-4">
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+          <h2 className="text-3xl font-bold text-gray-800 mb-4">Business Foundation</h2>
+          <p className="text-gray-600 mb-6">
+            Establishing a solid business foundation is crucial for building strong business credit.
+          </p>
+          <ProgressBar completed={completedCount} total={totalSteps} />
+        </div>
 
-      <div className="mb-6">
-        <ProgressBar completed={completedSteps.length} total={totalSteps} />
-      </div>
-
-      <div className="grid gap-4">
-        {steps.map((step) => (
-          <StepCard
-            key={step}
-            title={step}
-            completed={completedSteps.includes(step)}
-            onToggle={() => toggleStep(step)}
-          />
-        ))}
+        <div className="grid gap-4">
+          {steps.map((step) => (
+            <StepCard
+              key={step}
+              title={step}
+              completed={completedSteps.includes(normalizeStep(step))}
+              onToggle={() => toggleStep(step)}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );

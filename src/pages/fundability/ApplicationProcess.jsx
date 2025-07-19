@@ -1,8 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useUser } from "@supabase/auth-helpers-react";
+import { supabase } from '../../services/supabaseClient';
 import StepCard from '../../components/StepCard';
 import ProgressBar from '../../components/ProgressBar';
 
 const ApplicationProcess = () => {
+  const user = useUser();
   const [completedSteps, setCompletedSteps] = useState([]);
 
   const steps = [
@@ -10,32 +13,65 @@ const ApplicationProcess = () => {
       title: "Application Submission",
       description: "Submit complete and accurate credit applications",
       details: "Ensure all required documents are included: business license, EIN, bank statements, tax returns, and financial statements. Double-check all information for accuracy.",
-      status: completedSteps.includes('application-submission') ? 'completed' : 'pending'
     },
     {
       title: "Troubleshooting",
       description: "Address common application issues and delays",
       details: "Common issues include incomplete documentation, credit score problems, or business structure issues. Have backup plans and alternative lenders ready.",
-      status: completedSteps.includes('troubleshooting') ? 'completed' : 'pending'
     },
     {
       title: "Renegotiating",
       description: "Negotiate better terms and conditions",
       details: "Once approved, negotiate for better rates, terms, or credit limits. Use competing offers to leverage better deals. Don't accept the first offer.",
-      status: completedSteps.includes('renegotiating') ? 'completed' : 'pending'
     },
     {
       title: "Reversing Denials",
       description: "Appeal and reverse credit application denials",
       details: "If denied, request the specific reason for denial. Address the issues and reapply. Consider alternative lenders or different credit products.",
-      status: completedSteps.includes('reversing-denials') ? 'completed' : 'pending'
     }
   ];
 
-  const handleStepComplete = (step) => {
+  useEffect(() => {
+    if (user) {
+      fetchProgress();
+    }
+  }, [user]);
+
+  const fetchProgress = async () => {
+    const { data, error } = await supabase
+      .from("application_process_progress")
+      .select("step_name")
+      .eq("user_id", user.id)
+      .eq("completed", true);
+
+    if (error) {
+      console.error("Error fetching progress:", error);
+    } else {
+      setCompletedSteps(data.map((row) => row.step_name));
+    }
+  };
+
+  const toggleStep = async (step) => {
     const stepId = step.title.toLowerCase().replace(/\s+/g, '-');
-    if (!completedSteps.includes(stepId)) {
-      setCompletedSteps([...completedSteps, stepId]);
+    const isCompleted = completedSteps.includes(stepId);
+
+    const { error } = await supabase
+      .from("application_process_progress")
+      .upsert({
+        user_id: user.id,
+        step_name: stepId,
+        completed: !isCompleted,
+        updated_at: new Date(),
+      });
+
+    if (error) {
+      console.error("Error updating step:", error);
+    } else {
+      setCompletedSteps((prev) =>
+        isCompleted
+          ? prev.filter((s) => s !== stepId)
+          : [...prev, stepId]
+      );
     }
   };
 
@@ -51,20 +87,17 @@ const ApplicationProcess = () => {
             Master the credit application process to maximize your approval chances. 
             Learn how to submit strong applications and handle common issues.
           </p>
-          
-          <ProgressBar 
-            completed={completedCount} 
-            total={totalSteps} 
-          />
+
+          <ProgressBar completed={completedCount} total={totalSteps} />
         </div>
 
         <div className="space-y-4">
           {steps.map((step, index) => (
             <StepCard
               key={index}
-              step={step}
-              status={step.status}
-              onComplete={() => handleStepComplete(step)}
+              title={step.title}
+              completed={completedSteps.includes(step.title.toLowerCase().replace(/\s+/g, '-'))}
+              onToggle={() => toggleStep(step)}
             />
           ))}
         </div>
@@ -107,7 +140,7 @@ const ApplicationProcess = () => {
                 <li>✓ Business bank account</li>
               </ul>
             </div>
-            
+
             <div>
               <h4 className="font-medium text-gray-700 mb-2">During Application:</h4>
               <ul className="text-sm text-gray-600 space-y-1">
@@ -117,7 +150,7 @@ const ApplicationProcess = () => {
                 <li>✓ Keep application copy</li>
               </ul>
             </div>
-            
+
             <div>
               <h4 className="font-medium text-gray-700 mb-2">After Application:</h4>
               <ul className="text-sm text-gray-600 space-y-1">
@@ -134,4 +167,4 @@ const ApplicationProcess = () => {
   );
 };
 
-export default ApplicationProcess; 
+export default ApplicationProcess;
