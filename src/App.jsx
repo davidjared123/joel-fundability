@@ -6,6 +6,8 @@ import CreditReports from "@/pages/fundability/CreditReports";
 import Home from "@/pages/Home";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
+import ResetPassword from "@/pages/ResetPassword";
+import VerifyReset from "@/pages/VerifyReset";
 import { SessionContextProvider } from '@supabase/auth-helpers-react';
 import { supabase } from './services/supabaseClient';
 
@@ -19,6 +21,8 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/verify-reset" element={<VerifyReset />} />
 
           {/* Rutas privadas dentro del Dashboard */}
           <Route path="/dashboard" element={<DashboardLayout />}>
