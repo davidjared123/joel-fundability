@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import VendorCard from '../components/VendorCard';
 import { FiFilter, FiSearch } from 'react-icons/fi';
+import Navbar from "@/components/Navbar";
 
 const Vendors = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -243,8 +244,9 @@ const Vendors = () => {
   });
 
   return (
-    <div className="min-h-screen bg-gray-100 py-8">
-      <div className="max-w-7xl mx-auto px-4">
+    <div className="min-h-screen bg-gray-100 ">
+      <Navbar /> 
+      <div className="max-w-7xl mx-auto px-4 mt-10">
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
           <h1 className="text-3xl font-bold text-gray-800 mb-4">Business Credit Vendors</h1>
           <p className="text-gray-600 mb-6">

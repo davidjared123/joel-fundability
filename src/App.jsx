@@ -1,16 +1,25 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import DashboardLayout from "@/pages/Dashboard";
-import Foundation from "@/pages/fundability/Foundation";
-import Financials from "@/pages/fundability/Financials";
-import CreditReports from "@/pages/fundability/CreditReports";
 import Home from "@/pages/Home";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 import ResetPassword from "@/pages/ResetPassword";
 import VerifyReset from "@/pages/VerifyReset";
+import Vendors from "@/pages/Vendors";
+import CreditOptions from "@/pages/CreditOptions";
 import { SessionContextProvider } from '@supabase/auth-helpers-react';
 import { supabase } from './services/supabaseClient';
 
+import DashboardLayout from "@/pages/Dashboard";
+import Foundation from "@/pages/fundability/Foundation";
+import BusinessName from "@/pages/fundability/foundation/BusinessName";
+import EIN from "@/pages/fundability/foundation/EIN";
+import BusinessAddress from "@/pages/fundability/foundation/BusinessAddress";
+import WebsiteAndEmail from "@/pages/fundability/foundation/WebsiteAndEmail";
+import Licenses from "@/pages/fundability/foundation/Licenses";
+import Financials from "@/pages/fundability/Financials";
+import CreditReports from "@/pages/fundability/CreditReports";
+import Personal from "@/pages/fundability/Personal";
+import ApplicationProcess from "@/pages/fundability/ApplicationProcess"; 
 
 export default function App() {
   return (
@@ -24,15 +33,28 @@ export default function App() {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/verify-reset" element={<VerifyReset />} />
 
-          {/* Rutas privadas dentro del Dashboard */}
+          {/* Páginas independientes */}
+          <Route path="/vendors" element={<Vendors />} />
+          <Route path="/credit-options" element={<CreditOptions />} />
+
+          {/* Rutas anidadas del Dashboard */}
           <Route path="/dashboard" element={<DashboardLayout />}>
-            <Route path="foundation" element={<Foundation />} />
+            <Route index element={<Foundation />} />
+            <Route path="foundation" element={<Foundation />}>
+              <Route index element={<BusinessName />} />
+              <Route path="business-name-&-entity-setup" element={<BusinessName />} />
+              <Route path="ein-registration" element={<EIN />} />
+              <Route path="business-address-&-phone" element={<BusinessAddress />} />
+              <Route path="website-&-email-domain" element={<WebsiteAndEmail />} />
+              <Route path="licenses-&-permits" element={<Licenses />} />
+            </Route>
             <Route path="financials" element={<Financials />} />
             <Route path="credit-reports" element={<CreditReports />} />
+            <Route path="personal" element={<Personal />} />
+            <Route path="application-process" element={<ApplicationProcess />} />
           </Route>
         </Routes>
       </Router>
     </SessionContextProvider>
   );
 }
-

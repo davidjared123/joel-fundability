@@ -23,7 +23,7 @@ export default function Login() {
     });
     
     if (error) {
-      setErrorMsg("Invalid email or password");
+      setErrorMsg(error.message);
     } else {
       navigate("/dashboard");
     }

@@ -1,5 +1,5 @@
-// src/components/Navbar.jsx
 import { Link } from "react-router-dom";
+import { UserCircle } from "lucide-react"; // Asegúrate de tener lucide-react instalado
 
 export default function Navbar() {
   return (
@@ -10,14 +10,24 @@ export default function Navbar() {
           CreditBuilder
         </Link>
 
-        {/* Usuario / Menú de navegación */}
-        <nav className="flex items-center space-x-4">
-          <Link to="/dashboard" className="text-gray-600 hover:text-blue-600">
-            Dashboard
+        {/* Navegación */}
+        <nav className="flex items-center space-x-6">
+          <Link to="/dashboard/foundation" className="text-gray-600 hover:text-blue-600">
+            Foundation
           </Link>
+          <Link to="/vendors" className="text-gray-600 hover:text-blue-600">
+            Vendors Gallery
+          </Link>
+          <Link to="/credit-options" className="text-gray-600 hover:text-blue-600">
+            Credit Options
+          </Link>
+
+          {/* Ícono usuario */}
           <Link to="/settings" className="text-gray-600 hover:text-blue-600">
-            Settings
+            <UserCircle className="w-6 h-6" />
           </Link>
+
+          {/* Botón logout */}
           <button
             className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
             onClick={() => {

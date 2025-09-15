@@ -1,7 +1,8 @@
 import ExpandableItem from '../components/ExpandableItem';
 import { FiCreditCard, FiTrendingUp, FiDollarSign, FiCalendar, FiUsers, FiHome, FiTruck, FiBriefcase } from 'react-icons/fi';
+import Navbar from "@/components/Navbar";
 
-const CreditTypes = () => {
+const CreditOptions = () => {
   const creditTypes = [
     {
       title: "Trade Vendor Credit",
@@ -134,6 +135,8 @@ const CreditTypes = () => {
   ];
 
   return (
+    <div className="min-h-screen bg-gray-50">
+    <Navbar /> 
     <div className="min-h-screen bg-gray-100 py-8">
       <div className="max-w-4xl mx-auto px-4">
         <div className="bg-white rounded-lg shadow-md p-6 mb-8">
@@ -205,7 +208,8 @@ const CreditTypes = () => {
         </div>
       </div>
     </div>
+    </div>
   );
 };
 
-export default CreditTypes; 
+export default CreditOptions; 
