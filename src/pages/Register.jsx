@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { supabase } from "../services/supabaseClient";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 export default function Register() {
   const [email, setEmail] = useState("");
@@ -8,13 +8,11 @@ export default function Register() {
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const navigate = useNavigate();
+  const { signUp } = useAuth();
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
+    const { error } = await signUp(email, password);
 
     if (error) {
       setErrorMsg(error.message);

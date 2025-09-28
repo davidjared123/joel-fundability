@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
-import { useUser } from "@supabase/auth-helpers-react";
 import { supabase } from '../../services/supabaseClient';
+import { useAuth } from '../../context/AuthContext';
 import StepCard from '../../components/StepCard';
 import ProgressBar from '../../components/ProgressBar';
 
 const CreditReports = () => {
-  const user = useUser();
+  const { user } = useAuth();
   const [completedSteps, setCompletedSteps] = useState([]);
 
   const steps = [

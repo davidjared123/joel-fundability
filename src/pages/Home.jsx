@@ -10,7 +10,7 @@ export default function Home() {
         <h1 className="text-2xl font-bold text-gray-700">CreditBuilder</h1>
         <nav className="space-x-4 text-sm md:text-base">
           <Link to="/contact" className="text-gray-700 hover:text-blue-600">Contact Us</Link>
-          <Link to="/register" className="text-gray-700 hover:text-blue-600">Sign In</Link>
+          <Link to="/register" className="text-gray-700 hover:text-blue-600">Sign Up</Link>
           <Link to="/login" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">Log In</Link>
         </nav>
       </header>

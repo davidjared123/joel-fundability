@@ -6,8 +6,7 @@ import ResetPassword from "@/pages/ResetPassword";
 import VerifyReset from "@/pages/VerifyReset";
 import Vendors from "@/pages/Vendors";
 import CreditOptions from "@/pages/CreditOptions";
-import { SessionContextProvider } from '@supabase/auth-helpers-react';
-import { supabase } from './services/supabaseClient';
+import { AuthProvider } from './context/AuthContext';
 
 import DashboardLayout from "@/pages/Dashboard";
 import Foundation from "@/pages/fundability/Foundation";
@@ -23,7 +22,7 @@ import ApplicationProcess from "@/pages/fundability/ApplicationProcess";
 
 export default function App() {
   return (
-    <SessionContextProvider supabaseClient={supabase}>
+    <AuthProvider>
       <Router>
         <Routes>
           {/* Rutas públicas */}
@@ -55,6 +54,6 @@ export default function App() {
           </Route>
         </Routes>
       </Router>
-    </SessionContextProvider>
+    </AuthProvider>
   );
 }

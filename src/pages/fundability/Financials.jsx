@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
-import { useUser } from "@supabase/auth-helpers-react";
 import { supabase } from '../../services/supabaseClient';
 import StepCard from '../../components/StepCard';
 import ProgressBar from '../../components/ProgressBar';
+import { useAuth } from '../../context/AuthContext';
+import { useFinancialsData } from '../../hooks/useSectionData';
 
 const Financials = () => {
-  const user = useUser();
+  const { user } = useAuth();
   const [completedSteps, setCompletedSteps] = useState([]);
 
   const steps = [

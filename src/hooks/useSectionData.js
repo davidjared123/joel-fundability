@@ -2,14 +2,14 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/services/supabaseClient";
 import { useAuth } from "@/context/AuthContext";
 
-export default function useSectionData(tableName) {
+export function useSectionData(tableName) {
   const { user } = useAuth();
   const [sectionData, setSectionData] = useState({});
 
   useEffect(() => {
     async function fetchData() {
       if (!user) return;
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from(tableName)
         .select("item_key, item_value")
         .eq("user_id", user.id);
@@ -48,7 +48,23 @@ export default function useSectionData(tableName) {
   return [sectionData, saveSectionData];
 }
 
-// Mantener compatibilidad
+// Funciones específicas para cada sección
 export function useFoundationData() {
   return useSectionData("foundation_items");
+}
+
+export function useFinancialsData() {
+  return useSectionData("financials_items");
+}
+
+export function useCreditReportsData() {
+  return useSectionData("credit_reports_items");
+}
+
+export function usePersonalData() {
+  return useSectionData("personal_items");
+}
+
+export function useApplicationProcessData() {
+  return useSectionData("application_process_items");
 }
