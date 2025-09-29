@@ -1,7 +1,12 @@
-import { Link } from "react-router-dom";
-import { UserCircle } from "lucide-react"; // Asegúrate de tener lucide-react instalado
+import { NavLink, Link } from "react-router-dom";
+import { UserCircle } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Navbar() {
+  const { profile } = useAuth();
+  const activeClassName = "text-blue-600 font-bold";
+  const inactiveClassName = "text-gray-600 hover:text-blue-600";
+
   return (
     <header className="bg-white shadow-md">
       <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
@@ -12,20 +17,49 @@ export default function Navbar() {
 
         {/* Navegación */}
         <nav className="flex items-center space-x-6">
-          <Link to="/dashboard/foundation" className="text-gray-600 hover:text-blue-600">
+          <NavLink
+            to="/dashboard"
+            end
+            className={({ isActive }) =>
+              isActive ? activeClassName : inactiveClassName
+            }
+          >
             Foundation
-          </Link>
-          <Link to="/vendors" className="text-gray-600 hover:text-blue-600">
+          </NavLink>
+          <NavLink
+            to="/vendors"
+            className={({ isActive }) =>
+              isActive ? activeClassName : inactiveClassName
+            }
+          >
             Vendors Gallery
-          </Link>
-          <Link to="/credit-options" className="text-gray-600 hover:text-blue-600">
+          </NavLink>
+          <NavLink
+            to="/credit-options"
+            className={({ isActive }) =>
+              isActive ? activeClassName : inactiveClassName
+            }
+          >
             Credit Options
-          </Link>
+          </NavLink>
 
           {/* Ícono usuario */}
-          <Link to="/settings" className="text-gray-600 hover:text-blue-600">
-            <UserCircle className="w-6 h-6" />
-          </Link>
+          <NavLink
+            to="/dashboard/settings"
+            className={({ isActive }) =>
+              isActive ? activeClassName : inactiveClassName
+            }
+          >
+            {profile && profile.avatar_url ? (
+              <img
+                src={profile.avatar_url}
+                alt="Profile"
+                className="w-8 h-8 rounded-full object-cover"
+              />
+            ) : (
+              <UserCircle className="w-6 h-6" />
+            )}
+          </NavLink>
 
           {/* Botón logout */}
           <button

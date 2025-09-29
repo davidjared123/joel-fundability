@@ -13,22 +13,43 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get initial session
-    const getSession = async () => {
+    const getSessionAndProfile = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user ?? null);
+      const user = session?.user ?? null;
+      setUser(user);
+
+      if (user) {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+        setProfile(profileData);
+      }
       setLoading(false);
     };
 
-    getSession();
+    getSessionAndProfile();
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        setUser(session?.user ?? null);
+        const user = session?.user ?? null;
+        setUser(user);
+
+        if (user) {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single();
+          setProfile(profileData);
+        } else {
+          setProfile(null);
+        }
         setLoading(false);
       }
     );
@@ -54,15 +75,33 @@ export const AuthProvider = ({ children }) => {
 
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();
+    setProfile(null);
     return { error };
+  };
+
+  const updateProfile = async (updates) => {
+    if (!user) throw new Error('No user authenticated');
+
+    const { error } = await supabase.from('profiles').upsert(updates);
+    if (error) throw error;
+
+    // Re-fetch profile to update the context
+    const { data: profileData } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single();
+    setProfile(profileData);
   };
 
   const value = {
     user,
+    profile,
     loading,
     signIn,
     signUp,
     signOut,
+    updateProfile,
   };
 
   return (
@@ -70,4 +109,4 @@ export const AuthProvider = ({ children }) => {
       {children}
     </AuthContext.Provider>
   );
-}; 
+};
