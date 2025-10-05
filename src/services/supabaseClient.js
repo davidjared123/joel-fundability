@@ -1,17 +1,22 @@
-import { createClient } from '@supabase/supabase-js';
+import { createBrowserClient } from '@supabase/ssr';
 
-const supabaseUrl = 'https://leqrrbrybsitaurukgrc.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxlcXJyYnJ5YnNpdGF1cnVrZ3JjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIzMzc0MTYsImV4cCI6MjA2NzkxMzQxNn0.9HJPv2wFssNgb-_To4rSoKcpoozjK4UXCG9qMDf3GcM';
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-// ✅ Forzamos persistencia en localStorage
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+if (!supabaseUrl || !supabaseAnonKey) {
+  // eslint-disable-next-line no-console
+  console.warn('[Supabase] Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY env vars');
+}
+
+export const supabase = createBrowserClient(supabaseUrl ?? '', supabaseAnonKey ?? '', {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
-    storage: localStorage,
-    storageKey: 'supabase.auth.token', // clave estable y predecible
+    storage: typeof window !== 'undefined' ? window.localStorage : undefined,
+    storageKey: 'supabase.auth.token',
   },
 });
 
-// console.log('✅ Supabase client loaded with persistSession: true');
+// eslint-disable-next-line no-console
+console.log('✅ Supabase client loaded');

@@ -1,85 +1,91 @@
+// src/context/AuthContext.jsx
 import { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../services/supabaseClient';
 
-const AuthContext = createContext();
+// Crear contexto
+const AuthContext = createContext(null);
 
+// Hook para usar contexto fácilmente
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth must be used within an AuthProvider');
+  if (!context) throw new Error('useAuth debe usarse dentro de AuthProvider');
   return context;
 };
 
+// Provider
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [initialized, setInitialized] = useState(false);
 
-  useEffect(() => {
-    let mounted = true;
+  // Carga/actualiza el perfil sin bloquear la UI (no modifica "loading")
+  const fetchProfile = async (id) => {
+    try {
+      let { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', id)
+        .single();
 
-    // 1️⃣ Obtener sesión al inicio
-    const init = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      const currentUser = session?.user ?? null;
-      if (mounted) setUser(currentUser);
-
-      if (currentUser) {
-        try {
-          const { data: profileData, error } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', currentUser.id)
-            .single();
-
-          if (error) throw error;
-          if (mounted) setProfile(profileData);
-          // console.log('👤 Perfil cargado correctamente (init):', profileData);
-        } catch (err) {
-          // console.error('❌ Error cargando perfil en init:', err);
-          if (mounted) setProfile(null);
+      if (error && error.code === 'PGRST116') {
+        const { data: created, error: insertError } = await supabase
+          .from('profiles')
+          .insert({ id, created_at: new Date().toISOString() })
+          .select()
+          .single();
+        if (insertError) {
+          console.error(insertError);
+        } else {
+          setProfile(created);
+          return;
         }
       }
 
-      if (mounted) {
-        setLoading(false);
-        setInitialized(true);
+      if (data) setProfile(data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // Inicializar sesión y suscribirse a cambios
+  useEffect(() => {
+    let mounted = true;
+
+    const initSession = async () => {
+      try {
+        const {
+          data: { session },
+          error: sessionError,
+        } = await supabase.auth.getSession();
+
+        if (sessionError) console.error(sessionError);
+
+        const currentUser = session?.user ?? null;
+        if (mounted) setUser(currentUser);
+
+        if (currentUser) {
+          await fetchProfile(currentUser.id);
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        if (mounted) setLoading(false);
       }
     };
 
-    init();
+    initSession();
 
-    // 2️⃣ Escuchar cambios posteriores solo si ya inicializamos
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (!initialized) return; // Evita loop en el refresh
-
-        // console.log('🌀 Evento de auth detectado:', event, session);
-
+      (_event, session) => {
+        console.log('[Auth] event:', _event);
         const currentUser = session?.user ?? null;
         setUser(currentUser);
-
         if (currentUser) {
-          setLoading(true);
-          try {
-            const { data: profileData, error } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', currentUser.id)
-              .single();
-
-            if (error) throw error;
-            // console.log('👤 Perfil cargado correctamente (onAuthStateChange):', profileData);
-            setProfile(profileData);
-          } catch (err) {
-            // console.error('❌ Error cargando perfil:', err);
-            setProfile(null);
-          } finally {
-            setLoading(false);
-          }
+          // Refresca perfil en segundo plano; no bloquea UI ni toca "loading"
+          fetchProfile(currentUser.id);
         } else {
           setProfile(null);
-          setLoading(false);
         }
       }
     );
@@ -88,28 +94,69 @@ export const AuthProvider = ({ children }) => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [initialized]);
+  }, []);
 
-  // Métodos públicos
-  const signIn = async (email, password) => supabase.auth.signInWithPassword({ email, password });
-  const signUp = async (email, password) =>
-    supabase.auth.signUp({ email, password, options: { emailRedirectTo: 'https://joel-fundability-yl1t.vercel.app/login' } });
-  const signOut = async () => {
-    await supabase.auth.signOut();
-    setProfile(null);
-    setUser(null);
+  // Funciones de auth
+  const signIn = async (email, password) => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    return { error };
   };
+
+  const signUp = async (email, password) => {
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { emailRedirectTo: `${window.location.origin}/login` },
+    });
+    return { error };
+  };
+
+  const signOut = async () => {
+    const { error } = await supabase.auth.signOut();
+    setUser(null);
+    setProfile(null);
+    return { error };
+  };
+
   const updateProfile = async (updates) => {
-    if (!user) throw new Error('No user authenticated');
-    const { error } = await supabase.from('profiles').upsert(updates);
-    if (error) throw error;
-    const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single();
-    setProfile(profileData);
+    try {
+      const id = updates?.id ?? user?.id ?? null;
+      if (!id) return { data: null, error: new Error('No authenticated user') };
+
+      const payload = { ...updates, id, updated_at: new Date().toISOString() };
+      const { data, error } = await supabase
+        .from('profiles')
+        .upsert(payload)
+        .select()
+        .single();
+
+      if (!error) setProfile(data);
+      return { data, error };
+    } catch (error) {
+      console.error(error);
+      return { data: null, error };
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, signIn, signUp, signOut, updateProfile }}>
-      {children}
+    <AuthContext.Provider
+      value={{
+        user,
+        profile,
+        loading,
+        signIn,
+        signUp,
+        signOut,
+        updateProfile,
+      }}
+    >
+      {loading ? (
+        <div style={{ display: 'grid', placeItems: 'center', minHeight: '100vh' }}>
+          Cargando...
+        </div>
+      ) : (
+        children
+      )}
     </AuthContext.Provider>
   );
 };

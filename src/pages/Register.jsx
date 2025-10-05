@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import AuthNavbar from "@/components/AuthNavbar";
 
 export default function Register() {
   const [email, setEmail] = useState("");
@@ -27,11 +28,13 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
-        <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">
-          Create your account
-        </h2>
+    <>
+      <AuthNavbar mode="register" />
+      <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
+        <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
+          <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">
+            Create your account
+          </h2>
 
         {errorMsg && (
           <p className="text-red-500 text-sm text-center mb-4">{errorMsg}</p>
@@ -45,6 +48,8 @@ export default function Register() {
             <label className="block text-sm text-gray-600 mb-1">Email</label>
             <input
               type="email"
+              name="email"
+              autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-2 border bg-white text-gray-700 border-gray-300 rounded-lg  focus:ring-blue-500 focus:outline-none"
@@ -56,6 +61,8 @@ export default function Register() {
             <label className="block text-sm text-gray-600 mb-1">Password</label>
             <input
               type="password"
+              name="new-password"
+              autoComplete="new-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full px-4 py-2 border bg-white  text-gray-700 border-gray-300 rounded-lg  focus:ring-blue-500 focus:outline-none"
@@ -73,11 +80,12 @@ export default function Register() {
 
         <div className="mt-6 text-center text-sm text-gray-600">
           Already have an account?{" "}
-          <a href="/login" className="text-blue-500 hover:underline">
+          <Link to="/login" className="text-blue-500 hover:underline">
             Log in
-          </a>
+          </Link>
+        </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
