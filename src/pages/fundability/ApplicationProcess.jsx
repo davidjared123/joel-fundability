@@ -7,27 +7,38 @@ import ProgressBar from '../../components/ProgressBar';
 const ApplicationProcess = () => {
   const { user } = useAuth();
   const [completedSteps, setCompletedSteps] = useState([]);
+  const [selectedStep, setSelectedStep] = useState(null);
 
   const steps = [
     {
       title: "Application Submission",
-      description: "Submit complete and accurate credit applications",
-      details: "Ensure all required documents are included: business license, EIN, bank statements, tax returns, and financial statements. Double-check all information for accuracy.",
+      description: "You are now ready to begin improving your fundability, building business credit and exploring credit and loans",
+      details: "NOTE: Any appearance of inaccurate or incongruent information across financial records, applications, or business filings gets you immediately declined. Use your Fundability System to complete all steps and give accurate responses to ensure you are not declined for things you have full control over.",
+      substeps: [
+        {
+          title: "Marcar checklist: application-submission",
+          description: "You are now ready to begin improving your fundability, building business credit and exploring credit and loans",
+          details: "NOTE: Any appearance of inaccurate or incongruent information across financial records, applications, or business filings gets you immediately declined. Use your Fundability System to complete all steps and give accurate responses to ensure you are not declined for things you have full control over."
+        }
+      ]
     },
     {
       title: "Troubleshooting",
-      description: "Address common application issues and delays",
-      details: "Common issues include incomplete documentation, credit score problems, or business structure issues. Have backup plans and alternative lenders ready.",
+      description: "Our advisors are here to help",
+      details: "After following steps 1-3, if your account is still not reporting, contact an advisor to help resolve this or any other issue you may be facing. We've seen it all! Our team of advisors have helped thousands of business owners from every industry resolve Fundability issues and can help you get to the bottom of why something isn't working. Click the Chat icon at the bottom right side of the screen to get your questions answered.",
+      substeps: []
     },
     {
-      title: "Renegotiating",
-      description: "Negotiate better terms and conditions",
-      details: "Once approved, negotiate for better rates, terms, or credit limits. Use competing offers to leverage better deals. Don't accept the first offer.",
+      title: "Renegotiation",
+      description: "Our advisors are available to help",
+      details: "Our financial experts can help you get the deal you want, as well as advise you when it's best to accept lower terms now, then renegotiate later. One final thing to consider when renegotiating is knowing when to accept a deal with less-than-ideal terms now, versus applying for other accounts in hopes that one will offer you the terms you want. Getting the best terms on the first try is ideal, but there is often a strong case to take the deal in hand now, and know you can renegotiate within 3 to 6 months. Our financial experts can help inform this decision, as well as help you ensure your efforts to renegotiate have the best chance at success.",
+      substeps: []
     },
     {
-      title: "Reversing Denials",
-      description: "Appeal and reverse credit application denials",
-      details: "If denied, request the specific reason for denial. Address the issues and reapply. Consider alternative lenders or different credit products.",
+      title: "When to reapply after a denial",
+      description: "Not every denial can be reversed. If your application is not approved you can reapply, but read below before you do.",
+      details: "Key things to know before reapplying: Every lender and creditor has a different policy on how soon you can reapply. Some require waiting 30 days, others require 6 months. Additionally, some lenders and creditors use the same companies to underwrite applications. Once you receive a decline from one, other creditors may decline your application based on the decision of another company that uses the same underwriter. Your advisor can help you to know who these lenders/creditors are and how long you should wait before reapplying.",
+      substeps: []
     }
   ];
 
@@ -93,12 +104,31 @@ const ApplicationProcess = () => {
 
         <div className="space-y-4">
           {steps.map((step, index) => (
-            <StepCard
-              key={index}
-              title={step.title}
-              completed={completedSteps.includes(step.title.toLowerCase().replace(/\s+/g, '-'))}
-              onToggle={() => toggleStep(step)}
-            />
+            <div key={index}>
+              <StepCard
+                title={step.title}
+                completed={completedSteps.includes(step.title.toLowerCase().replace(/\s+/g, '-'))}
+                onToggle={() => toggleStep(step)}
+                onClick={() => setSelectedStep(selectedStep === index ? null : index)}
+              />
+              {selectedStep === index && (
+                <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                  <h4 className="font-semibold text-gray-800 mb-2">{step.description}</h4>
+                  <p className="text-gray-600 mb-4">{step.details}</p>
+                  {step.substeps && step.substeps.length > 0 && (
+                    <div className="space-y-2">
+                      {step.substeps.map((substep, subIndex) => (
+                        <div key={subIndex} className="bg-white p-3 rounded border">
+                          <h5 className="font-medium text-gray-700">{substep.title}</h5>
+                          <p className="text-sm text-gray-600 mt-1">{substep.description}</p>
+                          <p className="text-sm text-gray-500 mt-1">{substep.details}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           ))}
         </div>
 
