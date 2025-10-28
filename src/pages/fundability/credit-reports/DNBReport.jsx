@@ -5,14 +5,14 @@ export default function DNBReport({ sectionData, saveData, foundationData }) {
   const [showNotification, setShowNotification] = useState(false);
 
   useEffect(() => {
-    if (sectionData && sectionData.dnb_info_correct !== undefined) {
-      setIsCorrect(sectionData.dnb_info_correct);
+    if (sectionData && sectionData.dnb_report !== undefined) {
+      setIsCorrect(sectionData.dnb_report === 'correct');
     }
   }, [sectionData]);
 
   const handleToggle = async () => {
     const newValue = !isCorrect;
-    await saveData({ dnb_info_correct: newValue });
+    await saveData({ dnb_report: newValue ? 'correct' : 'incorrect' });
     setIsCorrect(newValue);
     setShowNotification(true);
     setTimeout(() => setShowNotification(false), 2000);

@@ -24,6 +24,7 @@ import Financials from "@/pages/fundability/Financials";
 import CreditReports from "@/pages/fundability/CreditReports";
 import Personal from "@/pages/fundability/Personal";
 import ApplicationProcess from "@/pages/fundability/ApplicationProcess";
+import Report from "@/pages/Report";
 import Settings from "@/pages/Settings";
 import PrivateRoute from "@/components/PrivateRoute";
 
@@ -62,6 +63,7 @@ export default function App() {
               <Route path="credit-reports" element={<CreditReports />} />
               <Route path="personal" element={<Personal />} />
               <Route path="application-process" element={<ApplicationProcess />} />
+              <Route path="report" element={<Report />} />
               <Route path="settings" element={<Settings />} />
             </Route>
           </Route>

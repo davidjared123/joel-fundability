@@ -24,6 +24,33 @@ export default function Foundation() {
   const [completedSteps, setCompletedSteps] = useState([]);
   const [selectedStep, setSelectedStep] = useState(null);
 
+  // Function to check if a step is completed based on data
+  const isStepCompleted = (stepId, data) => {
+    switch (stepId) {
+      case 'business-name-entity-setup':
+        return data.business_name && data.entity_type && data.formation_date;
+      case 'ein-registration':
+        return data.ein_number;
+      case 'business-address-phone':
+        return data.business_name && data.address_line1 && data.city && data.state && data.zip;
+      case 'website-email-domain':
+        return data.website && data.email;
+      case 'licenses-permits':
+        return data.license_type && data.license_number;
+      default:
+        return false;
+    }
+  };
+
+  // Update completed steps when foundationData changes
+  useEffect(() => {
+    if (foundationData) {
+      const newCompletedSteps = steps
+        .filter(step => isStepCompleted(step.id, foundationData))
+        .map(step => step.id);
+      setCompletedSteps(newCompletedSteps);
+    }
+  }, [foundationData]);
 
   useEffect(() => {
     if (user) {
@@ -45,38 +72,10 @@ export default function Foundation() {
     }
   };
 
-  const toggleStepCompleted = async (step) => {
-    const stepId = step.id;
-    const isCompleted = completedSteps.includes(stepId);
-
-    try {
-      if (isCompleted) {
-        const { error } = await supabase
-          .from("foundation_progress")
-          .delete()
-          .eq("user_id", user.id)
-          .eq("step_name", stepId);
-
-        if (error) throw error;
-
-        setCompletedSteps((prev) => prev.filter((s) => s !== stepId));
-      } else {
-        const { error } = await supabase
-          .from("foundation_progress")
-          .upsert({
-            user_id: user.id,
-            step_name: stepId,
-            completed: true,
-            updated_at: new Date(),
-          });
-
-        if (error) throw error;
-
-        setCompletedSteps((prev) => [...new Set([...prev, stepId])]);
-      }
-    } catch (error) {
-      console.error("Error toggling step:", error);
-    }
+  // Since steps are now auto-completed based on data, this function is no longer needed
+  // Keeping empty function for compatibility with StepCard component
+  const toggleStepCompleted = async () => {
+    // Auto-completion is now handled by the useEffect above
   };
 
   const completedCount = new Set(completedSteps).size;
@@ -122,8 +121,14 @@ export default function Foundation() {
       </div>
 
       {selectedStep && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg max-w-4xl w-full max-h-[80vh] overflow-y-auto relative">
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+          onClick={() => setSelectedStep(null)}
+        >
+          <div
+            className="bg-white p-6 rounded-lg max-w-4xl w-full max-h-[80vh] overflow-y-auto relative"
+            onClick={(e) => e.stopPropagation()}
+          >
             <button
               onClick={() => setSelectedStep(null)}
               className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-2xl"

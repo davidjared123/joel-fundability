@@ -5,6 +5,7 @@ import {
   FileText,
   User,
   ClipboardCheck,
+  BarChart3,
 } from "lucide-react";
 
 const sections = [
@@ -20,6 +21,11 @@ const sections = [
     path: "/dashboard/application-process",
     label: "Application Process",
     icon: ClipboardCheck,
+  },
+  {
+    path: "/dashboard/report",
+    label: "Report",
+    icon: BarChart3,
   },
 ];
 

@@ -38,6 +38,46 @@ export default function Financials() {
   const [completedSteps, setCompletedSteps] = useState([]);
   const [selectedStep, setSelectedStep] = useState(null);
 
+  // Function to check if a step is completed based on data
+  const isStepCompleted = (stepId, data) => {
+    switch (stepId) {
+      case 'time-in-business':
+        return data.business_entity_information;
+      case 'bank-name':
+        return data.bank_name;
+      case 'bank-statements':
+        return data.bank_statements_info;
+      case 'average-bank-balance':
+        return data.average_bank_balance;
+      case 'business-tax-return':
+        return data.filed_last_year_tax;
+      case 'financial-statements':
+        return data.can_supply_financial_statements;
+      case 'business-collateral':
+        return data.has_collateral;
+      case 'personal-tax-returns':
+        return data.personal_tax_up_to_date;
+      case 'business-revenue':
+        return data.has_revenue;
+      case 'employees':
+        return data.w2_employees;
+      case 'reserves':
+        return data.reserves; // Not implemented yet
+      default:
+        return false;
+    }
+  };
+
+  // Update completed steps when financialsData changes
+  useEffect(() => {
+    if (financialsData) {
+      const newCompletedSteps = steps
+        .filter(step => isStepCompleted(step.id, financialsData))
+        .map(step => step.id);
+      setCompletedSteps(newCompletedSteps);
+    }
+  }, [financialsData]);
+
   useEffect(() => {
     if (user) {
       fetchProgress();
@@ -58,30 +98,10 @@ export default function Financials() {
     }
   };
 
-  const toggleStepCompleted = async (step) => {
-    const stepId = step.id;
-    const isCompleted = completedSteps.includes(stepId);
-
-    try {
-      const { error } = await supabase
-        .from("financials_progress")
-        .upsert({
-          user_id: user.id,
-          step_name: stepId,
-          completed: !isCompleted,
-          updated_at: new Date(),
-        }, { onConflict: 'user_id,step_name' });
-
-      if (error) throw error;
-
-      if (isCompleted) {
-        setCompletedSteps((prev) => prev.filter((s) => s !== stepId));
-      } else {
-        setCompletedSteps((prev) => [...new Set([...prev, stepId])]);
-      }
-    } catch (error) {
-      console.error("Error toggling step:", error);
-    }
+  // Since steps are now auto-completed based on data, this function is no longer needed
+  // Keeping empty function for compatibility with StepCard component
+  const toggleStepCompleted = async () => {
+    // Auto-completion is now handled by the useEffect above
   };
 
   const completedCount = new Set(completedSteps).size;
@@ -139,8 +159,14 @@ export default function Financials() {
       </div>
 
       {selectedStep && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg max-w-4xl w-full max-h-[80vh] overflow-y-auto relative">
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+          onClick={() => setSelectedStep(null)}
+        >
+          <div
+            className="bg-white p-6 rounded-lg max-w-4xl w-full max-h-[80vh] overflow-y-auto relative"
+            onClick={(e) => e.stopPropagation()}
+          >
             <button
               onClick={() => setSelectedStep(null)}
               className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-2xl"

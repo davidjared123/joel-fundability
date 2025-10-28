@@ -65,8 +65,8 @@ export default function BureauDistribution() {
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-          <div className="bg-white p-6 rounded-lg max-w-lg w-full">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4">
+          <div className="bg-white p-6 rounded-lg max-w-lg w-full max-h-[90vh] overflow-y-auto">
             <h4 className="text-xl font-bold mb-4">Add Existing Accounts</h4>
             <div className="space-y-2">
               {vendors.map(vendor => (

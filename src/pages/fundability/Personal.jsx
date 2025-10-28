@@ -1,139 +1,121 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '../../services/supabaseClient';
-import { useAuth } from '../../context/AuthContext';
+import { useSectionData } from '../../hooks/useSectionData';
 import StepCard from '../../components/StepCard';
 import ProgressBar from '../../components/ProgressBar';
 
+// Import sub-step components
+import PersonalCreditScore from './personal/PersonalCreditScore';
+import CreditReport from './personal/CreditReport';
+import LexisNexis from './personal/LexisNexis';
+import ChexSystems from './personal/ChexSystems';
+import BankruptciesLiens from './personal/BankruptciesLiens';
+
+const steps = [
+  { label: "Personal Credit Score", id: "personal-credit-score" },
+  { label: "Credit Report", id: "credit-report" },
+  { label: "LexisNexis", id: "lexisnexis" },
+  { label: "Chex Systems", id: "chex-systems" },
+  { label: "Bankruptcies, Liens and Judgements", id: "bankruptcies-liens-and-judgements" },
+];
+
 const Personal = () => {
-  const { user } = useAuth();
+  const [personalData, savePersonalData] = useSectionData("personal_items");
   const [completedSteps, setCompletedSteps] = useState([]);
+  const [selectedStep, setSelectedStep] = useState(null);
 
-  const steps = [
-    {
-      title: "Personal Credit Score",
-      description: "Monitor and improve your personal credit score",
-      details: "Your personal credit score affects business credit applications. Aim for a score of 700+ for the best opportunities. Pay bills on time and keep credit utilization low.",
-    },
-    {
-      title: "Credit Report",
-      description: "Review your personal credit report regularly",
-      details: "Get free copies of your credit report from all three bureaus annually. Review for accuracy and dispute any errors. Monitor for identity theft.",
-    },
-    {
-      title: "LexisNexis",
-      description: "Check your LexisNexis consumer disclosure report",
-      details: "LexisNexis maintains consumer reports that may affect your credit applications. Request your report annually and dispute any inaccuracies.",
-    },
-    {
-      title: "Chex Systems",
-      description: "Review your Chex Systems report",
-      details: "Chex Systems tracks banking history. A negative report can affect your ability to open business bank accounts. Request your report and dispute any errors.",
-    },
-    {
-      title: "Bankruptcies, Liens and Judgements",
-      description: "Address any negative public records",
-      details: "Bankruptcies, liens, and judgments can severely impact your credit applications. Work to resolve these issues before applying for business credit.",
-    }
-  ];
-
-  useEffect(() => {
-    if (user) {
-      fetchProgress();
-    }
-  }, [user]);
-
-  const fetchProgress = async () => {
-    const { data, error } = await supabase
-      .from("personal_progress") // ✅ tabla correcta
-      .select("step_name")
-      .eq("user_id", user.id)
-      .eq("completed", true);
-
-    if (error) {
-      console.error("Error fetching progress:", error);
-    } else {
-      setCompletedSteps(data.map((row) => row.step_name));
+  // Function to check if a step is completed based on data
+  const isStepCompleted = (stepId, data) => {
+    switch (stepId) {
+      case 'personal-credit-score':
+        return data.credit_score;
+      case 'credit-report':
+        return data.credit_report;
+      case 'lexisnexis':
+        return data.lexisnexis;
+      case 'chex-systems':
+        return data.chex_systems;
+      case 'bankruptcies-liens-and-judgements':
+        return data.bankruptcies_liens_judgements;
+      default:
+        return false;
     }
   };
 
-  const toggleStep = async (step) => {
-    const stepId = step.title.toLowerCase().replace(/\s+/g, '-');
-    const isCompleted = completedSteps.includes(stepId);
+  // Update completed steps when personalData changes
+  useEffect(() => {
+    if (personalData) {
+      const newCompletedSteps = steps
+        .filter(step => isStepCompleted(step.id, personalData))
+        .map(step => step.id);
+      setCompletedSteps(newCompletedSteps);
+    }
+  }, [personalData]);
 
-    try {
-      if (isCompleted) {
-        const { error } = await supabase
-          .from("personal_progress") // ✅ tabla correcta
-          .delete()
-          .eq("user_id", user.id)
-          .eq("step_name", stepId);
+  const toggleStepCompleted = async () => {
+    // Auto-completion is now handled by the useEffect above
+  };
 
-        if (error) throw error;
-
-        setCompletedSteps((prev) => prev.filter((s) => s !== stepId));
-      } else {
-        const { error } = await supabase
-          .from("personal_progress") // ✅ tabla correcta
-          .upsert({
-            user_id: user.id,
-            step_name: stepId,
-            completed: true,
-            updated_at: new Date(),
-          });
-
-        if (error) throw error;
-
-        setCompletedSteps((prev) => [...prev, stepId]);
-      }
-    } catch (error) {
-      console.error("Error toggling step:", error);
+  const renderStepContent = () => {
+    switch (selectedStep) {
+      case 'personal-credit-score':
+        return <PersonalCreditScore sectionData={personalData} saveData={savePersonalData} />;
+      case 'credit-report':
+        return <CreditReport sectionData={personalData} saveData={savePersonalData} />;
+      case 'lexisnexis':
+        return <LexisNexis sectionData={personalData} saveData={savePersonalData} />;
+      case 'chex-systems':
+        return <ChexSystems sectionData={personalData} saveData={savePersonalData} />;
+      case 'bankruptcies-liens-and-judgements':
+        return <BankruptciesLiens sectionData={personalData} saveData={savePersonalData} />;
+      default:
+        return null;
     }
   };
 
   const completedCount = completedSteps.length;
-  const totalSteps = steps.length;
 
   return (
     <div className="min-h-screen bg-gray-100 py-8">
       <div className="max-w-4xl mx-auto px-4">
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <h1 className="text-3xl font-bold text-gray-800 mb-4">Personal Credit Management</h1>
-          <p className="text-gray-600 mb-6">
-            Manage your personal credit profile to support your business credit applications. 
-            Many business credit applications require personal credit checks.
-          </p>
-
-          <ProgressBar completed={completedCount} total={totalSteps} />
+          <h2 className="text-3xl font-bold text-gray-800 mb-4">Personal Credit Management</h2>
+          <ProgressBar completed={completedCount} total={steps.length} />
         </div>
-
-        <div className="space-y-4">
-          {steps.map((step, index) => {
-            const stepId = step.title.toLowerCase().replace(/\s+/g, '-');
+        <div className="grid gap-4">
+          {steps.map((step) => {
+            const stepId = step.id;
             return (
               <StepCard
-                key={index}
-                title={step.title}
-                description={step.description}
-                details={step.details}
+                key={step.id}
+                title={step.label}
                 completed={completedSteps.includes(stepId)}
-                onToggle={() => toggleStep(step)}
+                onToggle={() => toggleStepCompleted()}
+                onClick={() => setSelectedStep(step.id)}
               />
             );
           })}
         </div>
-
-        {/* Additional Information */}
-        <div className="mt-8 bg-blue-50 rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-blue-800 mb-3">Important Notes:</h3>
-          <ul className="text-blue-700 space-y-2 text-sm">
-            <li>• Personal credit affects business credit applications</li>
-            <li>• Aim for a personal credit score of 700+</li>
-            <li>• Monitor all credit reports regularly</li>
-            <li>• Dispute any inaccuracies immediately</li>
-            <li>• Keep personal and business finances separate</li>
-          </ul>
-        </div>
       </div>
+
+      {selectedStep && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+          onClick={() => setSelectedStep(null)}
+        >
+          <div
+            className="bg-white p-6 rounded-lg max-w-4xl w-full max-h-[80vh] overflow-y-auto relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setSelectedStep(null)}
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-2xl"
+            >
+              ×
+            </button>
+            {renderStepContent()}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
