@@ -1,50 +1,35 @@
-import { useEffect, useState } from 'react';
-import { supabase } from '../../services/supabaseClient';
-import { useAuth } from '../../context/AuthContext';
-import StepCard from '../../components/StepCard';
-import ProgressBar from '../../components/ProgressBar';
+import { useState, useEffect } from "react";
+import ProgressBar from "@/components/ProgressBar";
+import StepCard from "@/components/StepCard";
+import { useAuth } from "@/context/AuthContext";
+import { supabase } from "@/services/supabaseClient";
+import { useSectionData } from "@/hooks/useSectionData";
 
-const CreditReports = () => {
+// Import sub-step components
+import DNBReport from "./credit-reports/DNBReport";
+import ExperianData from "./credit-reports/ExperianData";
+import EquifaxReport from "./credit-reports/EquifaxReport";
+import BureauDistribution from "./credit-reports/BureauDistribution";
+import TradelinesReporting from "./credit-reports/TradelinesReporting";
+import Disputes from "./credit-reports/Disputes";
+import PaydexScore from "./credit-reports/PaydexScore";
+
+const steps = [
+  { label: "D&B Report", id: "dnb-report" },
+  { label: "Experian Data", id: "experian-data" },
+  { label: "Equifax Report", id: "equifax-report" },
+  { label: "Bureau Distribution", id: "bureau-distribution" },
+  { label: "Tradelines Reporting", id: "tradelines-reporting" },
+  { label: "Disputes", id: "disputes" },
+  { label: "Paydex Score", id: "paydex-score" },
+];
+
+export default function BusinessCredit() {
   const { user } = useAuth();
+  const [creditReportsData, saveCreditReportsData] = useSectionData("credit_reports_items");
+  const [foundationData] = useSectionData("foundation_items"); // Data from foundation section
   const [completedSteps, setCompletedSteps] = useState([]);
-
-  const steps = [
-    {
-      title: "D&B Report",
-      description: "Establish your Dun & Bradstreet business credit profile",
-      details: "Dun & Bradstreet is the most important business credit bureau. You need to establish a D-U-N-S number and build your Paydex score.",
-    },
-    {
-      title: "Experian Data",
-      description: "Monitor your Experian business credit data",
-      details: "Experian tracks business credit information including payment history, credit limits, and account balances.",
-    },
-    {
-      title: "Equifax Reports",
-      description: "Review your Equifax business credit reports",
-      details: "Equifax provides business credit reports and scores. Monitor your account regularly for accuracy.",
-    },
-    {
-      title: "Bureau Distribution",
-      description: "Ensure your accounts report to all major bureaus",
-      details: "Not all vendors report to all credit bureaus. Focus on vendors that report to D&B, Experian, and Equifax.",
-    },
-    {
-      title: "Tradelines Reporting",
-      description: "Build tradelines that report to business credit bureaus",
-      details: "Tradelines are credit accounts that appear on your business credit report. Focus on accounts that report to major bureaus.",
-    },
-    {
-      title: "Dispute Inaccuracies",
-      description: "Dispute any errors on your business credit reports",
-      details: "Regularly review your credit reports and dispute any inaccuracies. This includes incorrect payment history, account information, or personal information.",
-    },
-    {
-      title: "Paydex Score",
-      description: "Build and maintain a strong Paydex score",
-      details: "Paydex is D&B's business credit score (0-100). Aim for a score of 80+ for the best credit opportunities. Pay on time to build your score.",
-    }
-  ];
+  const [selectedStep, setSelectedStep] = useState(null);
 
   useEffect(() => {
     if (user) {
@@ -54,7 +39,7 @@ const CreditReports = () => {
 
   const fetchProgress = async () => {
     const { data, error } = await supabase
-      .from("credit_reports_progress") // ✅ tabla correcta
+      .from("credit_reports_progress")
       .select("step_name")
       .eq("user_id", user.id)
       .eq("completed", true);
@@ -62,81 +47,98 @@ const CreditReports = () => {
     if (error) {
       console.error("Error fetching progress:", error);
     } else {
-      setCompletedSteps(data.map((row) => row.step_name));
+      setCompletedSteps([...new Set(data.map((row) => row.step_name))]);
     }
   };
 
-  const toggleStep = async (step) => {
-    const stepId = step.title.toLowerCase().replace(/\s+/g, '-');
+  const toggleStepCompleted = async (step) => {
+    const stepId = step.id;
     const isCompleted = completedSteps.includes(stepId);
 
     try {
+      const { error } = await supabase
+        .from("credit_reports_progress")
+        .upsert({
+          user_id: user.id,
+          step_name: stepId,
+          completed: !isCompleted,
+          updated_at: new Date(),
+        }, { onConflict: 'user_id,step_name' });
+
+      if (error) throw error;
+
       if (isCompleted) {
-        const { error } = await supabase
-          .from("credit_reports_progress") // ✅ tabla correcta
-          .delete()
-          .eq("user_id", user.id)
-          .eq("step_name", stepId);
-
-        if (error) throw error;
-
         setCompletedSteps((prev) => prev.filter((s) => s !== stepId));
       } else {
-        const { error } = await supabase
-          .from("credit_reports_progress") // ✅ tabla correcta
-          .upsert({
-            user_id: user.id,
-            step_name: stepId,
-            completed: true,
-            updated_at: new Date(),
-          });
-
-        if (error) throw error;
-
-        setCompletedSteps((prev) => [...prev, stepId]);
+        setCompletedSteps((prev) => [...new Set([...prev, stepId])]);
       }
     } catch (error) {
       console.error("Error toggling step:", error);
     }
   };
 
-  const completedCount = completedSteps.length;
-  const totalSteps = steps.length;
+  const completedCount = new Set(completedSteps).size;
+
+  const renderStepContent = () => {
+    const props = {
+      sectionData: creditReportsData,
+      saveData: saveCreditReportsData,
+      foundationData: foundationData, // Pass foundation data to sub-steps
+    };
+
+    switch (selectedStep) {
+      case 'dnb-report':
+        return <DNBReport {...props} />;
+      case 'experian-data':
+        return <ExperianData {...props} />;
+      case 'equifax-report':
+        return <EquifaxReport {...props} />;
+      case 'bureau-distribution':
+        return <BureauDistribution />;
+      case 'tradelines-reporting':
+        return <TradelinesReporting />;
+      case 'disputes':
+        return <Disputes />;
+      case 'paydex-score':
+        return <PaydexScore {...props} />;
+      default:
+        return null;
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 py-8">
       <div className="max-w-4xl mx-auto px-4">
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <h1 className="text-3xl font-bold text-gray-800 mb-4">Business Credit Reports</h1>
-          <p className="text-gray-600 mb-6">
-            Monitor and manage your business credit reports across all major bureaus. 
-            Building strong credit reports is essential for accessing business funding.
-          </p>
-          
-          <ProgressBar 
-            completed={completedCount} 
-            total={totalSteps} 
-          />
+          <h2 className="text-3xl font-bold text-gray-800 mb-4">Business Credit Builder</h2>
+          <ProgressBar completed={completedCount} total={steps.length} />
         </div>
-
-        <div className="space-y-4">
-          {steps.map((step, index) => {
-            const stepId = step.title.toLowerCase().replace(/\s+/g, '-');
-            return (
-              <StepCard
-                key={index}
-                title={step.title}
-                description={step.description}
-                details={step.details}
-                completed={completedSteps.includes(stepId)}
-                onToggle={() => toggleStep(step)}
-              />
-            );
-          })}
+        <div className="grid gap-4">
+          {steps.map((step) => (
+            <StepCard
+              key={step.id}
+              title={step.label}
+              completed={completedSteps.includes(step.id)}
+              onToggle={() => toggleStepCompleted(step)}
+              onClick={() => setSelectedStep(step.id)}
+            />
+          ))}
         </div>
       </div>
+
+      {selectedStep && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg max-w-4xl w-full max-h-[80vh] overflow-y-auto relative">
+            <button
+              onClick={() => setSelectedStep(null)}
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-2xl"
+            >
+              ×
+            </button>
+            {renderStepContent()}
+          </div>
+        </div>
+      )}
     </div>
   );
-};
-
-export default CreditReports;
+}

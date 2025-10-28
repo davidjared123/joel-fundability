@@ -1,71 +1,42 @@
-import { useEffect, useState } from 'react';
-import { supabase } from '../../services/supabaseClient';
-import StepCard from '../../components/StepCard';
-import ProgressBar from '../../components/ProgressBar';
-import { useAuth } from '../../context/AuthContext';
-import { useFinancialsData } from '../../hooks/useSectionData';
+import { useState, useEffect } from "react";
+import ProgressBar from "@/components/ProgressBar";
+import StepCard from "@/components/StepCard";
+import { useAuth } from "@/context/AuthContext";
+import { supabase } from "@/services/supabaseClient";
+import { useSectionData } from "@/hooks/useSectionData";
 
-const Financials = () => {
+// Import sub-step components (will be created soon)
+import TimeInBusiness from "./financials/TimeInBusiness";
+import BankName from "./financials/BankName";
+import BankStatements from "./financials/BankStatements";
+import AverageBankBalance from "./financials/AverageBankBalance";
+import BusinessTaxReturn from "./financials/BusinessTaxReturn";
+import FinancialStatements from "./financials/FinancialStatements";
+import BusinessCollateral from "./financials/BusinessCollateral";
+import PersonalTax from "./financials/PersonalTax";
+import BusinessRevenue from "./financials/BusinessRevenue";
+import Employees from "./financials/Employees";
+import Reserves from "./financials/Reserves";
+
+const steps = [
+  { label: "Time in Business", id: "time-in-business" },
+  { label: "Bank Name", id: "bank-name" },
+  { label: "Bank Statements", id: "bank-statements" },
+  { label: "Average Bank Balance", id: "average-bank-balance" },
+  { label: "Business Tax Return", id: "business-tax-return" },
+  { label: "Financial Statements", id: "financial-statements" },
+  { label: "Business Collateral", id: "business-collateral" },
+  { label: "Personal Tax Returns", id: "personal-tax-returns" },
+  { label: "Business Revenue", id: "business-revenue" },
+  { label: "Employees", id: "employees" },
+  { label: "Reserves", id: "reserves" },
+];
+
+export default function Financials() {
   const { user } = useAuth();
+  const [financialsData, saveFinancialsData] = useSectionData("financials_items");
   const [completedSteps, setCompletedSteps] = useState([]);
-
-  const steps = [
-    {
-      title: "Time in Business",
-      description: "Establish your business timeline and history",
-      details: "Document how long your business has been operating. This includes both the time since incorporation and the time since you started business activities.",
-    },
-    {
-      title: "Business Bank Account",
-      description: "Open and maintain a business bank account",
-      details: "Separate your business finances from personal finances. Open a dedicated business checking account in your business name.",
-    },
-    {
-      title: "Business Bank Account Statements",
-      description: "Maintain regular bank statements",
-      details: "Keep copies of your monthly bank statements. These will be required for credit applications and demonstrate financial stability.",
-    },
-    {
-      title: "Business Bank Account Balance",
-      description: "Maintain adequate account balances",
-      details: "Keep sufficient funds in your business account. Most lenders require a minimum balance and regular deposits.",
-    },
-    {
-      title: "Business Tax Returns",
-      description: "File and maintain business tax returns",
-      details: "Ensure all business tax returns are filed on time and accurately. Keep copies for at least 3 years.",
-    },
-    {
-      title: "Financial Statements",
-      description: "Prepare financial statements",
-      details: "Create and maintain profit & loss statements, balance sheets, and cash flow statements.",
-    },
-    {
-      title: "Business Collateral",
-      description: "Identify and document business assets",
-      details: "List all business assets that could serve as collateral for loans. Include equipment, inventory, and real estate.",
-    },
-    {
-      title: "Personal Tax Returns",
-      description: "Maintain personal tax returns",
-      details: "Keep personal tax returns up to date. Many business credit applications require personal financial information.",
-    },
-    {
-      title: "Business Revenue",
-      description: "Track and document business revenue",
-      details: "Maintain detailed records of all business income. This includes sales, services, and other revenue streams.",
-    },
-    {
-      title: "Employees",
-      description: "Document employee information",
-      details: "Keep records of all employees, including W-2 forms and payroll information. This demonstrates business stability.",
-    },
-    {
-      title: "10% of Revenue",
-      description: "Ensure revenue meets minimum requirements",
-      details: "Many lenders require that your business generates at least 10% of the requested loan amount in monthly revenue.",
-    }
-  ];
+  const [selectedStep, setSelectedStep] = useState(null);
 
   useEffect(() => {
     if (user) {
@@ -75,7 +46,7 @@ const Financials = () => {
 
   const fetchProgress = async () => {
     const { data, error } = await supabase
-      .from("financials_progress") // ✅ corregido: tabla correcta
+      .from("financials_progress")
       .select("step_name")
       .eq("user_id", user.id)
       .eq("completed", true);
@@ -83,81 +54,103 @@ const Financials = () => {
     if (error) {
       console.error("Error fetching progress:", error);
     } else {
-      setCompletedSteps(data.map((row) => row.step_name));
+      setCompletedSteps([...new Set(data.map((row) => row.step_name))]);
     }
   };
 
-  const toggleStep = async (step) => {
-    const stepId = step.title.toLowerCase().replace(/\s+/g, '-');
+  const toggleStepCompleted = async (step) => {
+    const stepId = step.id;
     const isCompleted = completedSteps.includes(stepId);
 
     try {
+      const { error } = await supabase
+        .from("financials_progress")
+        .upsert({
+          user_id: user.id,
+          step_name: stepId,
+          completed: !isCompleted,
+          updated_at: new Date(),
+        }, { onConflict: 'user_id,step_name' });
+
+      if (error) throw error;
+
       if (isCompleted) {
-        const { error } = await supabase
-          .from("financials_progress") // ✅ corregido
-          .delete()
-          .eq("user_id", user.id)
-          .eq("step_name", stepId);
-
-        if (error) throw error;
-
         setCompletedSteps((prev) => prev.filter((s) => s !== stepId));
       } else {
-        const { error } = await supabase
-          .from("financials_progress") // ✅ corregido
-          .upsert({
-            user_id: user.id,
-            step_name: stepId,
-            completed: true,
-            updated_at: new Date(),
-          });
-
-        if (error) throw error;
-
-        setCompletedSteps((prev) => [...prev, stepId]);
+        setCompletedSteps((prev) => [...new Set([...prev, stepId])]);
       }
     } catch (error) {
       console.error("Error toggling step:", error);
     }
   };
 
-  const completedCount = completedSteps.length;
-  const totalSteps = steps.length;
+  const completedCount = new Set(completedSteps).size;
+
+  const renderStepContent = () => {
+    switch (selectedStep) {
+      case 'time-in-business':
+        return <TimeInBusiness sectionData={financialsData} saveData={saveFinancialsData} />;
+      case 'bank-name':
+        return <BankName sectionData={financialsData} saveData={saveFinancialsData} />;
+      case 'bank-statements':
+        return <BankStatements sectionData={financialsData} saveData={saveFinancialsData} />;
+      case 'average-bank-balance':
+        return <AverageBankBalance sectionData={financialsData} saveData={saveFinancialsData} />;
+      case 'business-tax-return':
+        return <BusinessTaxReturn sectionData={financialsData} saveData={saveFinancialsData} />;
+      case 'financial-statements':
+        return <FinancialStatements sectionData={financialsData} saveData={saveFinancialsData} />;
+      case 'business-collateral':
+        return <BusinessCollateral sectionData={financialsData} saveData={saveFinancialsData} />;
+      case 'personal-tax-returns':
+        return <PersonalTax sectionData={financialsData} saveData={saveFinancialsData} />;
+      case 'business-revenue':
+        return <BusinessRevenue sectionData={financialsData} saveData={saveFinancialsData} />;
+      case 'employees':
+        return <Employees sectionData={financialsData} saveData={saveFinancialsData} />;
+      case 'reserves':
+        return <Reserves sectionData={financialsData} saveData={saveFinancialsData} />;
+      default:
+        return null;
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 py-8">
       <div className="max-w-4xl mx-auto px-4">
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <h1 className="text-3xl font-bold text-gray-800 mb-4">Financials</h1>
-          <p className="text-gray-600 mb-6">
-            Build a strong financial foundation for your business. Complete these steps to establish 
-            financial credibility and prepare for credit applications.
-          </p>
-          
-          <ProgressBar 
-            completed={completedCount} 
-            total={totalSteps} 
-          />
+          <h2 className="text-3xl font-bold text-gray-800 mb-4">Financials</h2>
+          <ProgressBar completed={completedCount} total={steps.length} />
         </div>
-
-        <div className="space-y-4">
-          {steps.map((step, index) => {
-            const stepId = step.title.toLowerCase().replace(/\s+/g, '-');
+        <div className="grid gap-4">
+          {steps.map((step) => {
+            const stepId = step.id;
             return (
               <StepCard
-                key={index}
-                title={step.title}
-                description={step.description}
-                details={step.details}
+                key={step.id}
+                title={step.label}
                 completed={completedSteps.includes(stepId)}
-                onToggle={() => toggleStep(step)}
+                onToggle={() => toggleStepCompleted(step)}
+                onClick={() => setSelectedStep(step.id)}
               />
             );
           })}
         </div>
       </div>
+
+      {selectedStep && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg max-w-4xl w-full max-h-[80vh] overflow-y-auto relative">
+            <button
+              onClick={() => setSelectedStep(null)}
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-2xl"
+            >
+              ×
+            </button>
+            {renderStepContent()}
+          </div>
+        </div>
+      )}
     </div>
   );
-};
-
-export default Financials;
+}

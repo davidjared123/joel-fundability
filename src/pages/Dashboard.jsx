@@ -1,6 +1,7 @@
 import { Outlet, useLocation } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
+import SubNavbar from "@/components/SubNavbar";
 
 export default function DashboardLayout() {
   const { pathname } = useLocation();
@@ -9,6 +10,7 @@ export default function DashboardLayout() {
   return (
     <div className="h-screen flex flex-col bg-gray-50/50">
       <Navbar />
+      {!isSettingsPage && <SubNavbar />}
       <div className="flex flex-1 overflow-hidden">
         {!isSettingsPage && <Sidebar />}
         <main className="flex-1 overflow-y-auto">
