@@ -1,13 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import html2pdf from 'html2pdf.js';
 import { useFundabilityProgress } from '../hooks/useFundabilityProgress';
-import { calculateFundabilityScore, generateRecommendations, CREDIT_STANDARDS } from '../utils/fundabilityCalculator';
+import { calculateFundabilityScore, generateRecommendations } from '../utils/fundabilityCalculator';
 import FundabilityProgress from '../components/FundabilityProgress';
-import { useAuth } from '../context/AuthContext';
 
 const Report = () => {
   const { progress, userData, loading, getOverallProgress } = useFundabilityProgress();
-  const { user, profile } = useAuth();
+  // Auth context removed - not needed for report display
   const [fundabilityData, setFundabilityData] = useState(null);
   const [recommendations, setRecommendations] = useState(null);
   const [isExporting, setIsExporting] = useState(false);
@@ -29,11 +28,6 @@ const Report = () => {
 
     const element = reportRef.current;
     const businessName = userData?.foundation?.business_name || 'Business';
-    const date = new Date().toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
 
     const opt = {
       margin: [10, 10, 10, 10],
@@ -240,7 +234,7 @@ const Report = () => {
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div
                     className={`h-2 rounded-full transition-all duration-300 ${percentage >= 80 ? 'bg-green-500' :
-                        percentage >= 60 ? 'bg-yellow-500' : 'bg-red-500'
+                      percentage >= 60 ? 'bg-yellow-500' : 'bg-red-500'
                       }`}
                     style={{ width: `${percentage}%` }}
                   ></div>

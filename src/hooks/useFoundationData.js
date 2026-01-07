@@ -9,7 +9,7 @@ export default function useSectionData(tableName) {
   useEffect(() => {
     async function fetchData() {
       if (!user) return;
-      const { data, error } = await supabase
+      const { data, _error } = await supabase
         .from(tableName)
         .select("item_key, item_value")
         .eq("user_id", user.id);
