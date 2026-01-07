@@ -57,10 +57,22 @@ export const calculateFundabilityScore = (userData) => {
   let personalScore = 0;
   if (personal.credit_score) {
     // Credit score 300-850, convert to 0-10 points
-    const creditScorePoints = ((personal.credit_score - 300) / 550) * 10;
-    personalScore += Math.max(0, Math.min(10, creditScorePoints));
+    // Handle both string and number credit scores
+    const creditScoreNum = typeof personal.credit_score === 'string'
+      ? parseInt(personal.credit_score, 10)
+      : personal.credit_score;
+    if (!isNaN(creditScoreNum)) {
+      const creditScorePoints = ((creditScoreNum - 300) / 550) * 10;
+      personalScore += Math.max(0, Math.min(10, creditScorePoints));
+    }
   }
-  if (!personal.has_negative_records) personalScore += 5;
+  // Check for negative records using both possible field names
+  // bankruptcies_liens_judgements comes from personal_items table
+  // has_negative_records is the legacy/calculator field name
+  const hasNegativeRecords =
+    personal.bankruptcies_liens_judgements === 'Yes' ||
+    personal.has_negative_records === true;
+  if (!hasNegativeRecords) personalScore += 5;
   categoryScores.personal = personalScore;
   totalScore += personalScore;
 
@@ -68,7 +80,11 @@ export const calculateFundabilityScore = (userData) => {
   const applicationProcess = userData.applicationProcess || {};
   let applicationScore = 0;
   const completedSteps = applicationProcess.completedSteps || [];
-  applicationScore = (completedSteps.length / 4) * 10; // 4 steps total
+  // Handle both array of objects (from DB) and array of strings
+  // DB returns: [{step_name: 'step-1'}, {step_name: 'step-2'}]
+  // Some code may pass: ['step-1', 'step-2']
+  const stepsCount = Array.isArray(completedSteps) ? completedSteps.length : 0;
+  applicationScore = (stepsCount / 4) * 10; // 4 steps total
   categoryScores.applicationProcess = applicationScore;
   totalScore += applicationScore;
 

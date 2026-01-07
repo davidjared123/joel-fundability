@@ -1,0 +1,45 @@
+name: Keep Supabase Active
+
+on:
+  schedule:
+    # Run every 5 days at 12:00 UTC to prevent Supabase free tier from pausing
+    - cron: '0 12 */5 * *'
+  workflow_dispatch:
+    # Allows manual trigger from GitHub Actions UI
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase to Keep Active
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          echo "🔄 Pinging Supabase to prevent auto-pause..."
+          
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
+            echo "❌ Error: SUPABASE_URL or SUPABASE_ANON_KEY secrets are not set"
+            echo "Please add these secrets in your repository settings:"
+            echo "  Settings → Secrets and variables → Actions → New repository secret"
+            exit 1
+          fi
+          
+          response=$(curl -s -o /dev/null -w "%{http_code}" \
+            "${SUPABASE_URL}/rest/v1/profiles?select=id&limit=1" \
+            -H "apikey: ${SUPABASE_ANON_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}")
+          
+          if [ "$response" -eq 200 ]; then
+            echo "✅ Supabase is active! HTTP Response: $response"
+            echo "📅 Next scheduled run in 5 days"
+          elif [ "$response" -eq 401 ]; then
+            echo "⚠️ Authentication error (401) - Check your SUPABASE_ANON_KEY"
+            exit 1
+          elif [ "$response" -eq 404 ]; then
+            echo "⚠️ Table not found (404) - The 'profiles' table may not exist"
+            echo "But this still counts as activity, so Supabase should stay active!"
+          else
+            echo "⚠️ Unexpected response: $response"
+            echo "The request was made, which should still keep Supabase active"
+          fi
