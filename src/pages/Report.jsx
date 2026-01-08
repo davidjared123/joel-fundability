@@ -6,7 +6,6 @@ import FundabilityProgress from '../components/FundabilityProgress';
 
 const Report = () => {
   const { progress, userData, loading, getOverallProgress } = useFundabilityProgress();
-  // Auth context removed - not needed for report display
   const [fundabilityData, setFundabilityData] = useState(null);
   const [recommendations, setRecommendations] = useState(null);
   const [isExporting, setIsExporting] = useState(false);
@@ -100,7 +99,6 @@ const Report = () => {
     return 'Needs Improvement';
   };
 
-  // Format category name for display
   const formatCategoryName = (name) => {
     const names = {
       foundation: 'Foundation',
@@ -112,9 +110,12 @@ const Report = () => {
     return names[name] || name.replace(/([A-Z])/g, ' $1').trim();
   };
 
+  const creditScore = parseInt(userData?.personal?.credit_score) || 0;
+  const paydexScore = parseInt(userData?.businessCredit?.paydex_score) || 0;
+
   return (
     <div className="min-h-screen bg-gray-100 py-8">
-      {/* Export Button - Fixed at top */}
+      {/* Export Button */}
       <div className="max-w-6xl mx-auto px-4 mb-4">
         <div className="flex justify-end">
           <button
@@ -137,7 +138,7 @@ const Report = () => {
         </div>
       </div>
 
-      {/* Report Content - This will be exported to PDF */}
+      {/* Report Content */}
       <div ref={reportRef} className="max-w-6xl mx-auto px-4" id="report-content">
         {/* Header */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
@@ -178,39 +179,100 @@ const Report = () => {
         </div>
 
         {/* SBA Eligibility */}
-        {fundabilityData.sbaEligibility && (
-          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-            <h3 className="text-xl font-semibold mb-4">SBA Loan Eligibility</h3>
-            <div className="grid md:grid-cols-4 gap-4">
-              <div className={`p-4 rounded-lg ${fundabilityData.sbaEligibility.sba7a ? 'bg-green-50' : 'bg-red-50'}`}>
-                <div className="text-sm font-medium text-gray-600">SBA 7(a)</div>
-                <div className={`text-lg font-bold ${fundabilityData.sbaEligibility.sba7a ? 'text-green-600' : 'text-red-600'}`}>
-                  {fundabilityData.sbaEligibility.sba7a ? '✓ Eligible' : '✗ Not Eligible'}
-                </div>
-                <div className="text-xs text-gray-500">Requires 680+ credit</div>
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+          <h3 className="text-xl font-semibold mb-4">SBA Loan Eligibility</h3>
+
+          {/* User's Current Scores */}
+          <div className="grid md:grid-cols-2 gap-4 mb-6">
+            <div className="p-4 rounded-lg bg-blue-50 border border-blue-200">
+              <div className="text-sm font-medium text-blue-600">Your Personal Credit Score</div>
+              <div className="text-3xl font-bold text-blue-800">
+                {userData?.personal?.credit_score || '—'}
               </div>
-              <div className={`p-4 rounded-lg ${fundabilityData.sbaEligibility.sbaMicroloan ? 'bg-green-50' : 'bg-red-50'}`}>
-                <div className="text-sm font-medium text-gray-600">SBA Microloan</div>
-                <div className={`text-lg font-bold ${fundabilityData.sbaEligibility.sbaMicroloan ? 'text-green-600' : 'text-red-600'}`}>
-                  {fundabilityData.sbaEligibility.sbaMicroloan ? '✓ Eligible' : '✗ Not Eligible'}
-                </div>
-                <div className="text-xs text-gray-500">Requires 620+ credit</div>
+              {!userData?.personal?.credit_score && (
+                <div className="text-xs text-blue-500 mt-1">Enter your credit score to see eligibility</div>
+              )}
+            </div>
+            <div className="p-4 rounded-lg bg-purple-50 border border-purple-200">
+              <div className="text-sm font-medium text-purple-600">Your PAYDEX Score</div>
+              <div className="text-3xl font-bold text-purple-800">
+                {userData?.businessCredit?.paydex_score || '—'}
               </div>
-              <div className="p-4 rounded-lg bg-gray-50">
-                <div className="text-sm font-medium text-gray-600">Your Credit Score</div>
-                <div className="text-lg font-bold text-gray-800">
-                  {userData?.personal?.credit_score || 'Not provided'}
-                </div>
-              </div>
-              <div className="p-4 rounded-lg bg-gray-50">
-                <div className="text-sm font-medium text-gray-600">PAYDEX Score</div>
-                <div className="text-lg font-bold text-gray-800">
-                  {userData?.businessCredit?.paydex_score || 'Not provided'}
-                </div>
-              </div>
+              {!userData?.businessCredit?.paydex_score && (
+                <div className="text-xs text-purple-500 mt-1">Enter your PAYDEX score in Business Credit</div>
+              )}
             </div>
           </div>
-        )}
+
+          {/* SBA Loan Types */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* SBA 7(a) */}
+            <div className={`p-4 rounded-lg border-2 ${creditScore >= 680 ? 'bg-green-50 border-green-300' : 'bg-red-50 border-red-200'}`}>
+              <div className="text-sm font-medium text-gray-700">SBA 7(a)</div>
+              <div className={`text-lg font-bold ${creditScore >= 680 ? 'text-green-600' : 'text-red-600'}`}>
+                {creditScore >= 680 ? '✓ Eligible' : '✗ Not Eligible'}
+              </div>
+              <div className="text-xs text-gray-500 mt-1">Requires: 680+</div>
+              {creditScore > 0 && creditScore < 680 && (
+                <div className="text-xs font-medium text-red-600 mt-1">
+                  Need {680 - creditScore} more points
+                </div>
+              )}
+            </div>
+
+            {/* SBA 504 */}
+            <div className={`p-4 rounded-lg border-2 ${creditScore >= 680 ? 'bg-green-50 border-green-300' : 'bg-red-50 border-red-200'}`}>
+              <div className="text-sm font-medium text-gray-700">SBA 504</div>
+              <div className={`text-lg font-bold ${creditScore >= 680 ? 'text-green-600' : 'text-red-600'}`}>
+                {creditScore >= 680 ? '✓ Eligible' : '✗ Not Eligible'}
+              </div>
+              <div className="text-xs text-gray-500 mt-1">Requires: 680+</div>
+              {creditScore > 0 && creditScore < 680 && (
+                <div className="text-xs font-medium text-red-600 mt-1">
+                  Need {680 - creditScore} more points
+                </div>
+              )}
+            </div>
+
+            {/* SBA Express */}
+            <div className={`p-4 rounded-lg border-2 ${creditScore >= 650 ? 'bg-green-50 border-green-300' : 'bg-red-50 border-red-200'}`}>
+              <div className="text-sm font-medium text-gray-700">SBA Express</div>
+              <div className={`text-lg font-bold ${creditScore >= 650 ? 'text-green-600' : 'text-red-600'}`}>
+                {creditScore >= 650 ? '✓ Eligible' : '✗ Not Eligible'}
+              </div>
+              <div className="text-xs text-gray-500 mt-1">Requires: 650+</div>
+              {creditScore > 0 && creditScore < 650 && (
+                <div className="text-xs font-medium text-red-600 mt-1">
+                  Need {650 - creditScore} more points
+                </div>
+              )}
+            </div>
+
+            {/* SBA Microloan */}
+            <div className={`p-4 rounded-lg border-2 ${creditScore >= 620 ? 'bg-green-50 border-green-300' : 'bg-red-50 border-red-200'}`}>
+              <div className="text-sm font-medium text-gray-700">SBA Microloan</div>
+              <div className={`text-lg font-bold ${creditScore >= 620 ? 'text-green-600' : 'text-red-600'}`}>
+                {creditScore >= 620 ? '✓ Eligible' : '✗ Not Eligible'}
+              </div>
+              <div className="text-xs text-gray-500 mt-1">Requires: 620+</div>
+              {creditScore > 0 && creditScore < 620 && (
+                <div className="text-xs font-medium text-red-600 mt-1">
+                  Need {620 - creditScore} more points
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* PAYDEX Recommendation */}
+          {paydexScore > 0 && paydexScore < 80 && (
+            <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <div className="text-sm text-yellow-800">
+                <strong>💡 Tip:</strong> Your PAYDEX score of {paydexScore} is below 80.
+                Aim for 80+ by paying vendors early. Need {80 - paydexScore} more points.
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Progress Overview */}
         <FundabilityProgress progress={progress} overallPercentage={getOverallProgress()} />
@@ -234,7 +296,7 @@ const Report = () => {
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div
                     className={`h-2 rounded-full transition-all duration-300 ${percentage >= 80 ? 'bg-green-500' :
-                      percentage >= 60 ? 'bg-yellow-500' : 'bg-red-500'
+                        percentage >= 60 ? 'bg-yellow-500' : 'bg-red-500'
                       }`}
                     style={{ width: `${percentage}%` }}
                   ></div>
@@ -312,7 +374,7 @@ const Report = () => {
           </div>
         )}
 
-        {/* Collected Information Summary (for bank) */}
+        {/* Information Summary */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
           <h3 className="text-xl font-semibold mb-4">Information Summary</h3>
           <p className="text-sm text-gray-600 mb-4">Data collected for your credit application</p>
