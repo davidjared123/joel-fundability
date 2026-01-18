@@ -9,6 +9,7 @@ const VendorCard = ({ vendor, isSelected = false, onToggle, loading = false }) =
     requirements = [],
     benefits = [],
     bureaus = [],
+    isReporting = false,
     image
   } = vendor;
 
@@ -22,7 +23,14 @@ const VendorCard = ({ vendor, isSelected = false, onToggle, loading = false }) =
     <div className={`bg-white rounded-lg shadow-md hover:shadow-lg transition-all p-6 ${isSelected ? 'ring-2 ring-green-500 bg-green-50' : ''}`}>
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
-          <h3 className="text-xl font-semibold text-gray-800 mb-2">{name}</h3>
+          <div className="flex items-center gap-2 mb-2">
+            <h3 className="text-xl font-semibold text-gray-800">{name}</h3>
+            {isReporting ? (
+              <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 font-medium">Reporting</span>
+            ) : (
+              <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">Non-Reporting</span>
+            )}
+          </div>
           <span className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full mb-3">
             {category}
           </span>
@@ -40,10 +48,10 @@ const VendorCard = ({ vendor, isSelected = false, onToggle, loading = false }) =
         )}
       </div>
 
-      {/* Bureaus que reporta */}
+      {/* Bureaus that it reports to */}
       {bureaus.length > 0 && (
         <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-          <h4 className="font-medium text-gray-700 text-sm mb-2">Reporta a:</h4>
+          <h4 className="font-medium text-gray-700 text-sm mb-2">Reports to:</h4>
           <div className="flex flex-wrap gap-2">
             {bureaus.map((bureau, index) => (
               <span
@@ -97,7 +105,7 @@ const VendorCard = ({ vendor, isSelected = false, onToggle, loading = false }) =
             className="h-5 w-5 text-green-600 border-gray-300 rounded focus:ring-green-500 cursor-pointer"
           />
           <span className={`ml-2 text-sm font-medium ${isSelected ? 'text-green-700' : 'text-gray-600'} group-hover:text-green-600 transition-colors`}>
-            {loading ? 'Guardando...' : isSelected ? 'Tengo cuenta ✓' : 'Tengo cuenta'}
+            {loading ? 'Saving...' : isSelected ? 'I have an account ✓' : 'I have an account'}
           </span>
         </label>
 
