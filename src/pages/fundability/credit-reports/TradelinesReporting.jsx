@@ -47,7 +47,7 @@ export default function TradelinesReporting() {
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4 flex items-center">
           <FiAlertCircle className="mr-2" />
-          Error cargando datos: {error}
+          Error loading data: {error}
         </div>
       )}
 
@@ -55,13 +55,13 @@ export default function TradelinesReporting() {
       <div className="bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 rounded-xl p-6 mb-6 shadow-sm">
         <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
           <FiCheck className="mr-2 text-green-600" />
-          Total de Tradelines Activos
+          Total Active Tradelines
         </h4>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* Total General */}
           <div className="bg-white p-4 rounded-lg shadow-sm text-center">
-            <p className="text-sm text-gray-500 mb-1">Total Cuentas</p>
+            <p className="text-sm text-gray-500 mb-1">Total Accounts</p>
             <p className="text-4xl font-bold text-indigo-600">
               {loading ? <FiLoader className="animate-spin inline" /> : totalAccounts}
             </p>
@@ -100,8 +100,8 @@ export default function TradelinesReporting() {
       {selectedVendorsList.length > 0 && (
         <div className="bg-white rounded-lg border border-gray-200 mb-6">
           <div className="p-4 border-b border-gray-200 flex justify-between items-center">
-            <h4 className="font-semibold text-gray-800">Tus Tradelines Activos</h4>
-            <span className="text-sm text-gray-500">{selectedVendorsList.length} cuenta(s)</span>
+            <h4 className="font-semibold text-gray-800">Your Active Tradelines</h4>
+            <span className="text-sm text-gray-500">{selectedVendorsList.length} account(s)</span>
           </div>
           <div className="divide-y divide-gray-100 max-h-80 overflow-y-auto">
             {selectedVendorsList.map(vendor => (
@@ -194,7 +194,7 @@ export default function TradelinesReporting() {
             </div>
 
             <p className="text-sm text-gray-600 mb-4">
-              Marque todos los vendors donde ya tiene cuentas establecidas. Puede agregar más de 3 cuentas por buró.
+              Mark all vendors where you already have established accounts. You can add more than 3 accounts per bureau.
             </p>
 
             {/* Resumen rápido en modal */}
@@ -216,7 +216,7 @@ export default function TradelinesReporting() {
             {loading && (
               <div className="flex items-center justify-center py-4">
                 <FiLoader className="animate-spin mr-2" />
-                Cargando...
+                Loading...
               </div>
             )}
 

@@ -26,15 +26,18 @@ export default function BureauDistribution() {
 
   return (
     <div className="p-6">
-      <h3 className="text-2xl font-bold mb-4">Distribución de Burós</h3>
+      <h3 className="text-2xl font-bold mb-4">Bureau Distribution</h3>
       <p className="text-sm text-gray-600 mb-4">
-        Solicite financiamiento o agregue cuentas existentes para comenzar a informar a las 3 agencias de crédito comerciales. Los suscriptores consultan diferentes agencias de crédito comerciales. Algunos solo verificarán uno, otros verificarán una combinación. Es por eso que recomendamos encarecidamente a todas las empresas que tengan un mínimo de 3 cuentas que informen a cada una de las 3 agencias. NOTA: Hay muchos proveedores comerciales que informan a más de una agencia, algunos solo informan a una.
+        Apply for financing or add existing accounts to start reporting to all 3 business credit bureaus.
+        Lenders check different business credit bureaus. Some only check one, others check a combination.
+        That's why we strongly recommend all businesses have a minimum of 3 accounts reporting to each of the 3 bureaus.
+        NOTE: Many trade vendors report to more than one bureau, some only report to one.
       </p>
 
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4 flex items-center">
           <FiAlertCircle className="mr-2" />
-          Error cargando datos: {error}
+          Error loading data: {error}
         </div>
       )}
 
@@ -54,7 +57,7 @@ export default function BureauDistribution() {
           </div>
           {bureauCounts.Experian >= 3 && (
             <span className="text-green-600 text-sm flex items-center justify-center mt-2">
-              <FiCheck className="mr-1" /> Meta alcanzada
+              <FiCheck className="mr-1" /> Goal reached
             </span>
           )}
         </div>
@@ -74,7 +77,7 @@ export default function BureauDistribution() {
           </div>
           {bureauCounts.Equifax >= 3 && (
             <span className="text-green-600 text-sm flex items-center justify-center mt-2">
-              <FiCheck className="mr-1" /> Meta alcanzada
+              <FiCheck className="mr-1" /> Goal reached
             </span>
           )}
         </div>
@@ -94,7 +97,7 @@ export default function BureauDistribution() {
           </div>
           {bureauCounts['D&B'] >= 3 && (
             <span className="text-green-600 text-sm flex items-center justify-center mt-2">
-              <FiCheck className="mr-1" /> Meta alcanzada
+              <FiCheck className="mr-1" /> Goal reached
             </span>
           )}
         </div>
@@ -121,15 +124,25 @@ export default function BureauDistribution() {
             className="bg-white p-6 rounded-lg max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <h4 className="text-xl font-bold mb-2">Add Existing Accounts</h4>
+            <div className="flex justify-between items-center mb-4">
+              <h4 className="text-xl font-bold">Add Existing Accounts</h4>
+              <button
+                onClick={() => { setIsModalOpen(false); reload(); }}
+                className="text-gray-400 hover:text-gray-600 transition-colors p-1"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
             <p className="text-sm text-gray-600 mb-4">
-              Marque los vendors donde ya tiene una cuenta establecida.
+              Mark the vendors where you already have an established account.
             </p>
 
             {loading && (
               <div className="flex items-center justify-center py-4">
                 <FiLoader className="animate-spin mr-2" />
-                Cargando...
+                Loading...
               </div>
             )}
 
