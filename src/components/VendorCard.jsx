@@ -1,6 +1,6 @@
-import { FiExternalLink, FiInfo } from 'react-icons/fi';
+import { FiExternalLink, FiInfo, FiCheck } from 'react-icons/fi';
 
-const VendorCard = ({ vendor }) => {
+const VendorCard = ({ vendor, isSelected = false, onToggle, loading = false }) => {
   const {
     name,
     category,
@@ -8,11 +8,18 @@ const VendorCard = ({ vendor }) => {
     website,
     requirements = [],
     benefits = [],
+    bureaus = [],
     image
   } = vendor;
 
+  const handleCheckboxChange = () => {
+    if (onToggle && !loading) {
+      onToggle(name, bureaus);
+    }
+  };
+
   return (
-    <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6">
+    <div className={`bg-white rounded-lg shadow-md hover:shadow-lg transition-all p-6 ${isSelected ? 'ring-2 ring-green-500 bg-green-50' : ''}`}>
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
           <h3 className="text-xl font-semibold text-gray-800 mb-2">{name}</h3>
@@ -21,17 +28,35 @@ const VendorCard = ({ vendor }) => {
           </span>
           <p className="text-gray-600 text-sm mb-4">{description}</p>
         </div>
-        
+
         {image && (
           <div className="ml-4">
-            <img 
-              src={image} 
+            <img
+              src={image}
               alt={name}
               className="w-16 h-16 object-cover rounded-lg"
             />
           </div>
         )}
       </div>
+
+      {/* Bureaus que reporta */}
+      {bureaus.length > 0 && (
+        <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+          <h4 className="font-medium text-gray-700 text-sm mb-2">Reporta a:</h4>
+          <div className="flex flex-wrap gap-2">
+            {bureaus.map((bureau, index) => (
+              <span
+                key={index}
+                className="inline-flex items-center bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full"
+              >
+                <FiCheck className="mr-1" size={12} />
+                {bureau}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
 
       {benefits.length > 0 && (
         <div className="mb-4">
@@ -62,10 +87,20 @@ const VendorCard = ({ vendor }) => {
       )}
 
       <div className="flex justify-between items-center pt-4 border-t border-gray-200">
-        <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
-          Learn More
-        </button>
-        
+        {/* Checkbox para marcar si tiene cuenta */}
+        <label className="flex items-center cursor-pointer group">
+          <input
+            type="checkbox"
+            checked={isSelected}
+            onChange={handleCheckboxChange}
+            disabled={loading}
+            className="h-5 w-5 text-green-600 border-gray-300 rounded focus:ring-green-500 cursor-pointer"
+          />
+          <span className={`ml-2 text-sm font-medium ${isSelected ? 'text-green-700' : 'text-gray-600'} group-hover:text-green-600 transition-colors`}>
+            {loading ? 'Guardando...' : isSelected ? 'Tengo cuenta ✓' : 'Tengo cuenta'}
+          </span>
+        </label>
+
         {website && (
           <a
             href={website}
