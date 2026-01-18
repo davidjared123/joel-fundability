@@ -92,6 +92,11 @@ export const calculateFundabilityScore = (userData) => {
     financialsScore += financialsConfig.elements.bankAccount.points;
   }
 
+  // Bank Statements - 6+ months
+  if (financials.has_6_months_statements === true || financials.has_6_months_statements === 'Yes') {
+    financialsScore += financialsConfig.elements.bankStatements.points;
+  }
+
   // Average Bank Balance - Scaled based on thresholds
   if (financials.average_bank_balance && financials.average_bank_balance > 0) {
     const balance = typeof financials.average_bank_balance === 'string'
@@ -189,6 +194,38 @@ export const calculateFundabilityScore = (userData) => {
   // No Derogatory Records
   if (businessCredit.disputes === '' || businessCredit.disputes === 'No' || !businessCredit.disputes) {
     businessCreditScore += businessCreditConfig.elements.noDerogatory.points;
+  }
+
+  // Vendor Accounts (Bureau Distribution)
+  // Calculate points based on vendor accounts registered by user
+  const vendorAccounts = userData.vendorAccounts || {};
+  const vendorScoring = businessCreditConfig.vendorScoring;
+
+  if (vendorScoring && Object.keys(vendorAccounts).length > 0) {
+    // Import vendors data to calculate bureau counts
+    // Count vendors per bureau (max 3 per bureau for scoring)
+    const bureauCounts = {
+      'Experian': 0,
+      'Equifax': 0,
+      'D&B': 0
+    };
+
+    // vendorAccounts is an object like { "Vendor Name": true, ... }
+    // We need to match with vendor data to get bureaus
+    // This will be calculated from the actual vendor data passed in
+    if (userData.vendorBureauCounts) {
+      bureauCounts['Experian'] = Math.min(userData.vendorBureauCounts.Experian || 0, vendorScoring.maxVendorsPerBureau);
+      bureauCounts['Equifax'] = Math.min(userData.vendorBureauCounts.Equifax || 0, vendorScoring.maxVendorsPerBureau);
+      bureauCounts['D&B'] = Math.min(userData.vendorBureauCounts['D&B'] || 0, vendorScoring.maxVendorsPerBureau);
+    }
+
+    // Calculate vendor points: ~3.33 points per bureau when all 3 vendors (10 points total max)
+    const totalVendorPoints =
+      (bureauCounts['Experian'] * vendorScoring.pointsPerVendorPerBureau) +
+      (bureauCounts['Equifax'] * vendorScoring.pointsPerVendorPerBureau) +
+      (bureauCounts['D&B'] * vendorScoring.pointsPerVendorPerBureau);
+
+    businessCreditScore += Math.min(totalVendorPoints, businessCreditConfig.elements.vendorAccounts.points);
   }
 
   categoryScores.businessCredit = Math.min(businessCreditScore, businessCreditConfig.maxPoints);

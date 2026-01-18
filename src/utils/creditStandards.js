@@ -187,12 +187,13 @@ export const CREDIT_STANDARDS = {
         elements: {
             timeInBusiness: { points: 4, required: true },
             bankAccount: { points: 3, required: true },
+            bankStatements: { points: 3, required: true },  // 6+ months of statements
             averageBankBalance: { points: 4, required: true },
-            revenueHistory: { points: 4, required: true },
+            revenueHistory: { points: 3, required: true },
             taxReturns: { points: 3, required: true },
-            financialStatements: { points: 3, required: false },
+            financialStatements: { points: 2, required: false },
             collateral: { points: 2, required: false },
-            w2Employees: { points: 2, required: false }
+            w2Employees: { points: 1, required: false }
         },
 
         // Time in business thresholds
@@ -228,12 +229,14 @@ export const CREDIT_STANDARDS = {
         maxPoints: 25,
 
         elements: {
-            dnbRegistered: { points: 3, required: true },
-            paydexScore: { points: 6, required: true },
-            experianProfile: { points: 4, required: true },
-            equifaxProfile: { points: 4, required: true },
-            tradelinesReporting: { points: 5, required: true },
-            noDerogatory: { points: 3, required: true }
+            dnbRegistered: { points: 2, required: true },
+            paydexScore: { points: 4, required: true },
+            experianProfile: { points: 2, required: true },
+            equifaxProfile: { points: 2, required: true },
+            tradelinesReporting: { points: 3, required: true },
+            noDerogatory: { points: 2, required: true },
+            // Vendor accounts reporting to bureaus
+            vendorAccounts: { points: 10, required: true }  // Up to 10 points for vendor coverage
         },
 
         // Minimum tradelines for strong profile
@@ -241,8 +244,17 @@ export const CREDIT_STANDARDS = {
             minimum: 3,
             recommended: 5,
             strong: 8
+        },
+
+        // Vendor account scoring (Bureau Distribution)
+        // Points per vendor account per bureau (first 3 per bureau count)
+        vendorScoring: {
+            pointsPerVendorPerBureau: 1.11,  // ~3.33 points per bureau when 3 vendors (10 total for all 3 bureaus)
+            maxVendorsPerBureau: 3,
+            bureaus: ['Experian', 'Equifax', 'D&B']
         }
     },
+
 
     // ==========================================================================
     // APPLICATION PROCESS

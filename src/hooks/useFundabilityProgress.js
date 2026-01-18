@@ -83,6 +83,30 @@ export const useFundabilityProgress = () => {
         .eq('user_id', user.id)
         .eq('completed', true);
 
+      // Fetch Vendor Accounts (for bureau distribution scoring)
+      const { data: vendorAccountsData } = await supabase
+        .from('user_vendor_accounts')
+        .select('vendor_name, bureaus')
+        .eq('user_id', user.id);
+
+      // Convert vendor accounts to object and calculate bureau counts
+      const vendorAccounts = {};
+      const vendorBureauCounts = { Experian: 0, Equifax: 0, 'D&B': 0 };
+
+      if (vendorAccountsData) {
+        vendorAccountsData.forEach(item => {
+          vendorAccounts[item.vendor_name] = true;
+          // Count bureaus from stored data
+          if (item.bureaus && Array.isArray(item.bureaus)) {
+            item.bureaus.forEach(bureau => {
+              if (vendorBureauCounts[bureau] !== undefined) {
+                vendorBureauCounts[bureau]++;
+              }
+            });
+          }
+        });
+      }
+
       // Calculate progress for each section
       const newProgress = {
         foundation: calculateFoundationProgress(foundationData),
@@ -98,7 +122,9 @@ export const useFundabilityProgress = () => {
         financials: financialsData || {},
         businessCredit: businessCreditData || {},
         personal: personalData || {},
-        applicationProcess: { completedSteps: applicationProgress || [] }
+        applicationProcess: { completedSteps: applicationProgress || [] },
+        vendorAccounts: vendorAccounts,
+        vendorBureauCounts: vendorBureauCounts
       });
 
     } catch (error) {
