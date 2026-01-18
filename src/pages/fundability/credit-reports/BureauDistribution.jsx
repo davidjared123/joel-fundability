@@ -113,8 +113,14 @@ export default function BureauDistribution() {
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4 z-50">
-          <div className="bg-white p-6 rounded-lg max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-xl">
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4 z-50"
+          onClick={() => { setIsModalOpen(false); reload(); }}
+        >
+          <div
+            className="bg-white p-6 rounded-lg max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
             <h4 className="text-xl font-bold mb-2">Add Existing Accounts</h4>
             <p className="text-sm text-gray-600 mb-4">
               Marque los vendors donde ya tiene una cuenta establecida.

@@ -113,8 +113,8 @@ export default function TradelinesReporting() {
                       <span
                         key={bureau}
                         className={`text-xs px-2 py-0.5 rounded ${bureau === 'Experian' ? 'bg-blue-100 text-blue-700' :
-                            bureau === 'Equifax' ? 'bg-green-100 text-green-700' :
-                              'bg-purple-100 text-purple-700'
+                          bureau === 'Equifax' ? 'bg-green-100 text-green-700' :
+                            'bg-purple-100 text-purple-700'
                           }`}
                       >
                         {bureau}
@@ -175,8 +175,14 @@ export default function TradelinesReporting() {
 
       {/* Modal para agregar cuentas existentes */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4 z-50">
-          <div className="bg-white p-6 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4 z-50"
+          onClick={() => setIsModalOpen(false)}
+        >
+          <div
+            className="bg-white p-6 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex justify-between items-center mb-4">
               <h4 className="text-xl font-bold">Add Existing Accounts</h4>
               <button
@@ -237,8 +243,8 @@ export default function TradelinesReporting() {
                         <span
                           key={bureau}
                           className={`text-xs px-2 py-0.5 rounded ${bureau === 'Experian' ? 'bg-blue-100 text-blue-700' :
-                              bureau === 'Equifax' ? 'bg-green-100 text-green-700' :
-                                'bg-purple-100 text-purple-700'
+                            bureau === 'Equifax' ? 'bg-green-100 text-green-700' :
+                              'bg-purple-100 text-purple-700'
                             }`}
                         >
                           {bureau}
