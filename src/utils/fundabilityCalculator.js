@@ -93,7 +93,8 @@ export const calculateFundabilityScore = (userData) => {
   }
 
   // Bank Statements - 6+ months
-  if (financials.has_6_months_statements === true || financials.has_6_months_statements === 'Yes') {
+  const has6MonthsStatements = financials.has_6_months_statements;
+  if (has6MonthsStatements === true || has6MonthsStatements === 'true' || has6MonthsStatements === 'Yes') {
     financialsScore += financialsConfig.elements.bankStatements.points;
   }
 
