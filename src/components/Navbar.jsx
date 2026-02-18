@@ -3,7 +3,7 @@ import { NavLink, Link, useNavigate } from "react-router-dom";
 import { UserCircle, Menu, X, Settings, LogOut } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
-import logo from "../assets/logo.png";
+import logo from "../assets/logo.svg";
 
 export default function Navbar() {
   const { profile, signOut } = useAuth();
