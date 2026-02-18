@@ -3,6 +3,8 @@ import { NavLink, Link, useNavigate } from "react-router-dom";
 import { UserCircle, Menu, X, Settings, LogOut } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
+import logo from "../assets/logo.png";
+
 export default function Navbar() {
   const { profile, signOut } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
@@ -28,12 +30,8 @@ export default function Navbar() {
       <header className="bg-white/80 backdrop-blur-sm shadow-md sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
           {/* Logo */}
-          <Link to="/dashboard" className="flex items-center gap-2 leading-none">
-            <img src="/iso.svg" alt="The Credit Builder Logo" className="w-8 h-8" />
-            <div className="flex flex-col">
-              <span className="text-xl font-bold text-blue-600">The Credit Builder</span>
-              <span className="text-[0.65rem] font-medium text-blue-400 tracking-wider uppercase">AI Credit Builder</span>
-            </div>
+          <Link to="/dashboard" className="flex items-center">
+            <img src={logo} alt="The Credit Builder" className="h-10 w-auto" />
           </Link>
 
           {/* Navegación de escritorio */}

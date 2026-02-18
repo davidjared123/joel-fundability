@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 
+import logo from "../assets/logo.png";
+
 export default function HomeNavbar() {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -14,13 +16,9 @@ export default function HomeNavbar() {
     <>
       <header className="bg-white/80 backdrop-blur-sm shadow-md sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <h1 className="leading-none flex items-center gap-2">
-            <img src="/iso.svg" alt="The Credit Builder Logo" className="w-10 h-10" />
-            <Link to="/" className="flex flex-col">
-              <span className="text-2xl font-bold text-blue-600">The Credit Builder</span>
-              <span className="text-xs font-medium text-blue-400 tracking-wider uppercase">AI Credit Builder</span>
-            </Link>
-          </h1>
+          <Link to="/" className="flex items-center">
+            <img src={logo} alt="The Credit Builder" className="h-12 w-auto" />
+          </Link>
 
           {/* Navegación de escritorio */}
           <nav className="hidden md:flex items-center space-x-6 text-base">
