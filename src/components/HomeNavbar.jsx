@@ -14,10 +14,14 @@ export default function HomeNavbar() {
     <>
       <header className="bg-white/80 backdrop-blur-sm shadow-md sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-blue-600">
-            <Link to="/">CreditBuilder</Link>
+          <h1 className="leading-none flex items-center gap-2">
+            <img src="/iso.svg" alt="The Credit Builder Logo" className="w-10 h-10" />
+            <Link to="/" className="flex flex-col">
+              <span className="text-2xl font-bold text-blue-600">The Credit Builder</span>
+              <span className="text-xs font-medium text-blue-400 tracking-wider uppercase">AI Credit Builder</span>
+            </Link>
           </h1>
-          
+
           {/* Navegación de escritorio */}
           <nav className="hidden md:flex items-center space-x-6 text-base">
             {navLinks.map(link => (
@@ -37,9 +41,8 @@ export default function HomeNavbar() {
 
       {/* Menú Overlay Móvil */}
       <div
-        className={`md:hidden fixed top-0 right-0 h-full w-full max-w-xs bg-white/95 backdrop-blur-sm z-50 shadow-xl transform transition-transform duration-300 ease-in-out ${
-          isOpen ? "translate-x-0" : "translate-x-full"
-        }`}
+        className={`md:hidden fixed top-0 right-0 h-full w-full max-w-xs bg-white/95 backdrop-blur-sm z-50 shadow-xl transform transition-transform duration-300 ease-in-out ${isOpen ? "translate-x-0" : "translate-x-full"
+          }`}
       >
         <div className="flex justify-between items-center p-4 border-b border-gray-200/80">
           <h2 className="font-bold text-lg text-blue-600">Menu</h2>
@@ -49,9 +52,9 @@ export default function HomeNavbar() {
         </div>
         <nav className="flex flex-col p-4 space-y-2 mt-4">
           {navLinks.map(link => (
-            <Link 
-              key={link.to} 
-              to={link.to} 
+            <Link
+              key={link.to}
+              to={link.to}
               className="p-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
               onClick={() => setIsOpen(false)}
             >
@@ -59,7 +62,7 @@ export default function HomeNavbar() {
             </Link>
           ))}
           <div className="border-t border-gray-200/80 pt-4 mt-2">
-            <Link 
+            <Link
               to="/login"
               className="w-full text-center block bg-blue-600 text-white px-4 py-3 rounded-md hover:bg-blue-700 transition-colors font-semibold"
               onClick={() => setIsOpen(false)}

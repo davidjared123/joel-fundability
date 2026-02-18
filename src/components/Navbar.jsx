@@ -28,8 +28,12 @@ export default function Navbar() {
       <header className="bg-white/80 backdrop-blur-sm shadow-md sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
           {/* Logo */}
-          <Link to="/dashboard" className="text-xl font-bold text-blue-600">
-            CreditBuilder
+          <Link to="/dashboard" className="flex items-center gap-2 leading-none">
+            <img src="/iso.svg" alt="The Credit Builder Logo" className="w-8 h-8" />
+            <div className="flex flex-col">
+              <span className="text-xl font-bold text-blue-600">The Credit Builder</span>
+              <span className="text-[0.65rem] font-medium text-blue-400 tracking-wider uppercase">AI Credit Builder</span>
+            </div>
           </Link>
 
           {/* Navegación de escritorio */}
@@ -85,9 +89,8 @@ export default function Navbar() {
 
       {/* Menú Overlay Móvil */}
       <div
-        className={`md:hidden fixed top-0 right-0 h-full w-full max-w-xs bg-white/95 backdrop-blur-sm z-50 shadow-xl transform transition-transform duration-300 ease-in-out ${
-          isOpen ? "translate-x-0" : "translate-x-full"
-        }`}
+        className={`md:hidden fixed top-0 right-0 h-full w-full max-w-xs bg-white/95 backdrop-blur-sm z-50 shadow-xl transform transition-transform duration-300 ease-in-out ${isOpen ? "translate-x-0" : "translate-x-full"
+          }`}
       >
         <div className="flex justify-between items-center p-4 border-b border-gray-200/80">
           <h2 className="font-bold text-lg text-blue-600">Menu</h2>
@@ -98,19 +101,19 @@ export default function Navbar() {
         <nav className="flex flex-col p-4 space-y-2">
           {/* User profile section */}
           <div className="flex items-center space-x-4 p-2 mb-4 border-b border-gray-200/80 pb-4">
-              {profile && profile.avatar_url ? (
-                <img
-                  src={profile.avatar_url}
-                  alt="Profile"
-                  className="w-12 h-12 rounded-full object-cover"
-                />
-              ) : (
-                <UserCircle className="w-12 h-12 text-gray-400" />
-              )}
-              <div className="truncate">
-                  <p className="font-semibold text-gray-800 truncate">{profile?.full_name || 'User'}</p>
-                  <p className="text-sm text-gray-500 truncate">{profile?.email}</p>
-              </div>
+            {profile && profile.avatar_url ? (
+              <img
+                src={profile.avatar_url}
+                alt="Profile"
+                className="w-12 h-12 rounded-full object-cover"
+              />
+            ) : (
+              <UserCircle className="w-12 h-12 text-gray-400" />
+            )}
+            <div className="truncate">
+              <p className="font-semibold text-gray-800 truncate">{profile?.full_name || 'User'}</p>
+              <p className="text-sm text-gray-500 truncate">{profile?.email}</p>
+            </div>
           </div>
 
           {navLinks.map((link) => (
@@ -128,24 +131,24 @@ export default function Navbar() {
           ))}
 
           <div className="border-t border-gray-200/80 pt-4 mt-4 space-y-2">
-              <NavLink
-                to="/dashboard/settings"
-                className={({ isActive }) =>
-                  `p-3 rounded-lg flex items-center space-x-3 transition-colors ${isActive ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-gray-700 hover:bg-gray-100'}`
-                }
-                onClick={() => setIsOpen(false)}
-              >
-                <Settings className="w-5 h-5" />
-                <span>Settings</span>
-              </NavLink>
+            <NavLink
+              to="/dashboard/settings"
+              className={({ isActive }) =>
+                `p-3 rounded-lg flex items-center space-x-3 transition-colors ${isActive ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-gray-700 hover:bg-gray-100'}`
+              }
+              onClick={() => setIsOpen(false)}
+            >
+              <Settings className="w-5 h-5" />
+              <span>Settings</span>
+            </NavLink>
 
-              <button
-                className="w-full text-left p-3 rounded-lg flex items-center space-x-3 text-red-500 hover:bg-red-50 transition-colors"
-                onClick={handleLogout}
-              >
-                <LogOut className="w-5 h-5" />
-                <span>Log out</span>
-              </button>
+            <button
+              className="w-full text-left p-3 rounded-lg flex items-center space-x-3 text-red-500 hover:bg-red-50 transition-colors"
+              onClick={handleLogout}
+            >
+              <LogOut className="w-5 h-5" />
+              <span>Log out</span>
+            </button>
           </div>
         </nav>
       </div>
