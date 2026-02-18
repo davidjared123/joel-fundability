@@ -17,7 +17,7 @@ export default function HomeNavbar() {
       <header className="bg-white/80 backdrop-blur-sm shadow-md sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center">
-            <img src={logo} alt="The Credit Builder" className="h-12 w-auto" />
+            <img src={logo} alt="The Credit Builder" className="h-20 w-auto" />
           </Link>
 
           {/* Navegación de escritorio */}

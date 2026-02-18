@@ -10,7 +10,7 @@ export default function AuthNavbar({ mode = "login" }) {
   return (
     <header className="bg-white flex justify-between items-center px-6 py-4 shadow-md sticky top-0 z-40">
       <Link to="/" className="flex items-center">
-        <img src={logo} alt="The Credit Builder" className="h-12 w-auto" />
+        <img src={logo} alt="The Credit Builder" className="h-20 w-auto" />
       </Link>
 
       <nav className="flex items-center space-x-4">

@@ -31,7 +31,7 @@ export default function Navbar() {
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
           {/* Logo */}
           <Link to="/dashboard" className="flex items-center">
-            <img src={logo} alt="The Credit Builder" className="h-10 w-auto" />
+            <img src={logo} alt="The Credit Builder" className="h-20 w-auto" />
           </Link>
 
           {/* Navegación de escritorio */}
