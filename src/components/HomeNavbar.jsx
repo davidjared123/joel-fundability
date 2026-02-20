@@ -6,7 +6,7 @@ import logo from "../assets/logo.svg";
 
 export default function HomeNavbar() {
   const [isOpen, setIsOpen] = useState(false);
-  s
+
   const navLinks = [
     { to: "/contact", text: "Contact Us" },
     { to: "/register", text: "Sign Up" },
